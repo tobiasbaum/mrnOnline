@@ -7,8 +7,85 @@
   crossorigin="anonymous"></script>
 <script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
 <script>
-function createPeer() {
-     var peer = new Peer();
+
+class SelfPlayer {
+  constructor(id, name) {
+    this.id = id;
+    this.name = name;
+  }
+}
+
+class OtherPlayer {
+  constructor(conn) {
+    this.conn = conn;
+  }
+
+  get id() {
+    return this.conn.peer;
+  }
+
+  sendData(d) {
+    this.conn.send(d);
+  }
+}
+
+class GameField {
+
+  constructor() {
+    this.myself = null;
+    this.others = [];
+  }
+
+  addMyself(id, name) {
+    this.myself = new SelfPlayer(id, name);
+  }
+
+  addOtherPlayer(conn) {
+    this.others.push(new OtherPlayer(conn));
+    var _this = this;
+    conn.on('data', function(d) {
+      _this.handleData(d);
+    });
+    this.updatePlayers();
+  }
+
+  handleData(d) {
+    if (d.type === 'message') {
+      this.addMessage(d.content);
+    }
+  }
+
+  updatePlayers() {
+    var content = '';
+    this.others.forEach(function(x) {
+      content += '<div id="' + x.name + '"><h2>' + x.name + ' (' + x.id + ')</h2></div>';
+    });
+    $('#players').html(content);
+  }
+
+  sendMessage(msg) {
+    var d = {
+      type: 'message',
+      content: msg
+    }
+    this.others.forEach(function(x) {
+      x.sendData(d);
+    })
+    this.addMessage(msg);
+  }
+
+  addMessage(msg) {
+    $('#messages').append(msg + '\n');
+  }
+}
+
+function createPeer(name) {
+     if (window.mrnOnline) {
+         return;
+     }
+     window.mrnOnline = {};
+     window.mrnOnline.gameField = new GameField();
+     var peer = new Peer(null, {host: '192.168.178.30', port: 9000, key: 'peerjs'});
      peer.on('error', function (err) {
          console.log(err);
          alert('' + err);
@@ -16,29 +93,40 @@ function createPeer() {
      peer.on('open', function(id) {
          //alert('My peer ID is: ' + id);
          $('#inhalt').html('My peer ID is: ' + id);
+         window.mrnOnline.gameField.addMyself(id, name);
      });
      peer.on('connection', function(conn) {
-         alert('Got connection ' + conn);
+         //alert('Got connection ' + conn);
+         window.mrnOnline.gameField.addOtherPlayer(conn);
      });
-     return peer;
+     window.mrnOnline.peer = peer;
 }
 
 function start() {
-     createPeer();
+     var name = prompt('Name');
+     createPeer(name);
 }
 
 function join() {
-
-     var peer = createPeer();
-
      var other = prompt('ID des Mitspielers');
-     var conn = peer.connect(other);
+     var conn = window.mrnOnline.peer.connect(other);
+     window.mrnOnline.gameField.addOtherPlayer(conn);
+}
+
+function sendMessage() {
+     var message = prompt('Nachricht');
+     window.mrnOnline.gameField.sendMessage(message);
 }
 </script>
 </head>
 <body>
 <button onClick="javascript:start()">Start</button>
 <button onClick="javascript:join()">Join</button>
+<button onClick="javascript:sendMessage()">Send message</button>
 <div id="inhalt"></div>
+<div id="players">
+</div>
+<textarea id="messages">
+</textarea>
 </body>
 </html>
