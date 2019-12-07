@@ -1,7 +1,44 @@
 <html>
 <head>
 <title>MRN Online</title>
+<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+<script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
+<script>
+function createPeer() {
+     var peer = new Peer();
+     peer.on('error', function (err) {
+         console.log(err);
+         alert('' + err);
+     });
+     peer.on('open', function(id) {
+         //alert('My peer ID is: ' + id);
+         $('#inhalt').html('My peer ID is: ' + id);
+     });
+     peer.on('connection', function(conn) {
+         alert('Got connection ' + conn);
+     });
+     return peer;
+}
+
+function start() {
+     createPeer();
+}
+
+function join() {
+
+     var peer = createPeer();
+
+     var other = prompt('ID des Mitspielers');
+     var conn = peer.connect(other);
+}
+</script>
 </head>
 <body>
+<button onClick="javascript:start()">Start</button>
+<button onClick="javascript:join()">Join</button>
+<div id="inhalt"></div>
 </body>
 </html>
