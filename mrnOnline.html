@@ -16,12 +16,13 @@ class SelfPlayer {
 }
 
 class OtherPlayer {
-  constructor(conn) {
-    this.conn = conn;
+  constructor(id, db) {
+    this.id = id;
+    this.db = db;
   }
 
-  get id() {
-    return this.conn.peer;
+  get name() {
+    return this.db.get('playerNames', this.id);
   }
 
 }
@@ -49,17 +50,43 @@ class Database {
       return 'add';
     }
   }
+  
+  get(id) {
+    return this.data[id];
+  }
+  
+  dumpEntries(conn, databaseName, sender, knownReceivers) {
+      let _this = this;
+    Object.keys(this.times).forEach(function (id) {
+      let packet = {
+        src: sender,
+        t: _this.times[id],
+        rcv: knownReceivers,
+        db: databaseName,
+        id: id,
+        dta: _this.data[id]
+      };
+      conn.send(packet);
+      console.log('dump ' + JSON.stringify(packet) + ' to ' + conn.peer);
+    });
+  }
 }
 
 class DistributedDatabaseSystem {
 
-  constructor(ownName) {
+  constructor(peer, ownName) {
+    this.peer = peer;
     this.ownName = ownName;
     this.time = 0;
     this.otherNames = [];
     this.others = [];
     this.callbacks = {add: {}, update: {}, ignore: {}};
     this.databases = {};
+  }
+  
+  connectToNode(id) {
+    var conn = this.peer.connect(id, {reliable: true});
+    this.addNode(conn);
   }
 
   addNode(conn) {
@@ -69,19 +96,64 @@ class DistributedDatabaseSystem {
     conn.on('data', function(d) {
       _this.handleData(d);
     });
+    conn.on('open', function(d) {
+      _this.dumpDatabasesTo(conn);
+    });
+  }
+  
+  dumpDatabasesTo(conn) {
+    for (let [name, db] of Object.entries(this.databases)) {
+      db.dumpEntries(conn, name, this.ownName, this.otherNames);
+    }
   }
 
   handleData(d) {
+    console.log('received: ' + JSON.stringify(d));
     this.ensureDbExists(d.db);
     var eventType = this.databases[d.db].put(d.t, d.id, d.dta);
     if (this.callbacks[eventType][d.db]) {
       this.callbacks[eventType][d.db](d.id, d.dta);
     }
+    if (eventType != 'ignore') {
+      this.forwardToFurtherReceivers(d);
+    }
+    this.establishConnectionToUnknownNodes(d);
   }
   
   ensureDbExists(dbName) {
     if (!this.databases[dbName]) {
       this.databases[dbName] = new Database();
+    }
+  }
+  
+  forwardToFurtherReceivers(packet) {
+    let furtherReceivers = [];
+    let existingSet = new Set(packet.rcv);
+    existingSet.add(this.ownName);
+    existingSet.add(packet.src);
+    this.otherNames.forEach(function (x) {
+      if (!existingSet.has(x)) {
+        furtherReceivers.push(x);
+      }
+    });
+    packet.rcv.push(...furtherReceivers);
+    let _this = this;
+    furtherReceivers.forEach(function(id) {
+      let index = _this.otherNames.indexOf(id);
+      let conn = _this.others[index];
+      conn.send(packet)
+    });
+  }
+  
+  establishConnectionToUnknownNodes(packet) {
+    let _this = this;
+    let nameSet = new Set(this.otherNames);
+    nameSet.add(this.ownName);
+    packet.rcv.filter(x => !nameSet.has(x)).forEach(function (x) {
+      _this.connectToNode(x);
+    });
+    if (!nameSet.has(packet.src)) {
+      this.connectToNode(packet.src);
     }
   }
   
@@ -104,6 +176,13 @@ class DistributedDatabaseSystem {
     this.handleData(packet);
   }
   
+  get(database, id) {
+    if (!this.databases[database]) {
+      return undefined;
+    }
+    return this.databases[database].get(id);
+  }
+  
   on(eventType, database, action) {
     this.callbacks[eventType][database] = action;
   }
@@ -112,19 +191,31 @@ class DistributedDatabaseSystem {
 
 class GameField {
 
-  constructor(ownId, ownName) {
-    this.myself = null;
+  constructor(peer, ownId, ownName) {
     this.others = [];
-    this.db = new DistributedDatabaseSystem();
+    this.db = new DistributedDatabaseSystem(peer, ownId);
     var _this = this;
     this.db.on('add', 'messages', function(id, msg) {_this.handleAddedMessage(msg)});
+    this.db.on('add', 'playerNames', function(id, name) {_this.handleChangedPlayerName(id, name)});
+    this.db.on('update', 'playerNames', function(id, name) {_this.handleChangedPlayerName(id, name)});
     
     this.myself = new SelfPlayer(ownId, ownName);
+    this.db.put('playerNames', ownId, ownName);
+  }
+  
+  connectToOtherPlayer(id) {
+    this.db.connectToNode(id);
+    this.others.push(new OtherPlayer(id, this.db));
+    this.updatePlayers();    
   }
 
   addOtherPlayer(conn) {
     this.db.addNode(conn);
-    this.others.push(new OtherPlayer(conn));
+    this.others.push(new OtherPlayer(conn.peer, this.db));
+    this.updatePlayers();
+  }
+
+  handleChangedPlayerName(id, name) {
     this.updatePlayers();
   }
 
@@ -151,7 +242,7 @@ function createPeer(name) {
      }
      window.mrnOnline = {};
      //var peer = new Peer(null, {host: '192.168.178.30', port: 9000, key: 'peerjs'});
-     var peer = new Peer(null, {host: 'localhost', port: 9000, key: 'peerjs'});
+     var peer = new Peer(null, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
      peer.on('error', function (err) {
          console.log(err);
          alert('' + err);
@@ -159,29 +250,33 @@ function createPeer(name) {
      peer.on('open', function(id) {
          //alert('My peer ID is: ' + id);
          $('#inhalt').html('My peer ID is: ' + id);
-         window.mrnOnline.gameField = new GameField(id, name);
+         window.mrnOnline.gameField = new GameField(peer, id, name);
      });
      peer.on('connection', function(conn) {
          //alert('Got connection ' + conn);
          window.mrnOnline.gameField.addOtherPlayer(conn);
      });
-     window.mrnOnline.peer = peer;
 }
 
 function start() {
      var name = prompt('Name');
-     createPeer(name);
+     if (name) {
+       createPeer(name);
+     }
 }
 
 function join() {
      var other = prompt('ID des Mitspielers');
-     var conn = window.mrnOnline.peer.connect(other);
-     window.mrnOnline.gameField.addOtherPlayer(conn);
+     if (other) {
+       window.mrnOnline.gameField.connectToOtherPlayer(other);
+     }
 }
 
 function sendMessage() {
      var message = prompt('Nachricht');
-     window.mrnOnline.gameField.sendMessage(message);
+     if (message) {
+       window.mrnOnline.gameField.sendMessage(message);
+     }
 }
 </script>
 </head>
