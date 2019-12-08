@@ -8,10 +8,107 @@
 <script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
 <script>
 
+class CardType {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+class Card {
+
+  constructor(type) {
+    this.type = type;
+  }
+  
+  format() {
+    return '<table class="card"><tr><td>' + this.type.name + '</td></tr></table>';
+  }
+}
+
+class CardCollection {
+  constructor(cards) {
+    this.cards = cards;
+  }
+  
+  add(card) {
+    this.cards.push(card);
+  }
+  
+  get size() {
+    return this.cards.length;
+  }
+  
+  formatAll() {
+    let ret = '';
+    this.cards.forEach(function (x) {
+      ret += x.format();
+    });
+    return ret;
+  }
+}
+
+class CardStash extends CardCollection {
+  constructor(cards) {
+    super(cards);
+  }
+  
+  shuffle() {
+    var currentIndex = this.cards.length;
+    var temporaryValue;
+    var randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      // And swap it with the current element.
+      temporaryValue = this.cards[currentIndex];
+      this.cards[currentIndex] = this.cards[randomIndex];
+      this.cards[randomIndex] = temporaryValue;
+    }
+  }
+  
+  draw() {
+    return this.cards.shift();
+  }
+}
+
+class CardBag extends CardCollection {
+  constructor(cards) {
+    super(cards);
+  }
+}
+
 class SelfPlayer {
-  constructor(id, name) {
+  constructor(id, name, deck) {
     this.id = id;
     this.name = name;
+    this.library = new CardStash(deck);
+    this.library.shuffle();
+    this.hand = new CardBag([]);
+    this.table = new CardBag([]);
+    this.graveyard = new CardStash([]);
+    this.lifes = 20;
+  }
+  
+  format() {
+    let ret = '<div>Hand<br/>';
+    ret += this.hand.formatAll();
+    ret += '</div>';
+    ret += '<div>Ausgelegt:<br/>';
+    ret += this.table.formatAll();
+    ret += '</div>';
+    ret += '<div>Bibliothek: ' + this.library.size + ' Karten. <a href="javascript:drawCard()">Karte ziehen</a></div>';
+    ret += '<div>Friedhof: ' + this.graveyard.size + ' Karten</div>';
+    ret += '<div>Lebenspunkte: ' + this.lifes + '</div>';
+    return ret;
+  }
+  
+  drawCard() {
+    this.hand.add(this.library.draw());
   }
 }
 
@@ -199,7 +296,7 @@ class GameField {
     this.db.on('add', 'playerNames', function(id, name) {_this.handleChangedPlayerName(id, name)});
     this.db.on('update', 'playerNames', function(id, name) {_this.handleChangedPlayerName(id, name)});
     
-    this.myself = new SelfPlayer(ownId, ownName);
+    this.myself = new SelfPlayer(ownId, ownName, window.mrnOnline.deck);
     this.db.put('playerNames', ownId, ownName);
   }
   
@@ -220,11 +317,16 @@ class GameField {
   }
 
   updatePlayers() {
+    this.updateSelf();
     var content = '';
     this.others.forEach(function(x) {
       content += '<div id="' + x.name + '"><h2>' + x.name + ' (' + x.id + ')</h2></div>';
     });
     $('#players').html(content);
+  }
+  
+  updateSelf() {
+    $('#self').html(this.myself.format());
   }
 
   sendMessage(msg) {
@@ -237,10 +339,9 @@ class GameField {
 }
 
 function createPeer(name) {
-     if (window.mrnOnline) {
+     if (window.mrnOnline.gameField) {
          return;
      }
-     window.mrnOnline = {};
      //var peer = new Peer(null, {host: '192.168.178.30', port: 9000, key: 'peerjs'});
      var peer = new Peer(null, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
      peer.on('error', function (err) {
@@ -278,6 +379,32 @@ function sendMessage() {
        window.mrnOnline.gameField.sendMessage(message);
      }
 }
+
+function drawCard() {
+  window.mrnOnline.gameField.myself.drawCard();
+  window.mrnOnline.gameField.updateSelf();
+}
+
+window.mrnOnline = {};
+window.mrnOnline.cards = {
+  respite: new CardType('Respite'),
+  fog: new CardType('Fog'),
+  verdantForce: new CardType('Verdant Force'),
+  terror: new CardType('Terror'),
+};
+
+window.mrnOnline.deck = [
+  new Card(window.mrnOnline.cards['respite']),
+  new Card(window.mrnOnline.cards['respite']),
+  new Card(window.mrnOnline.cards['respite']),
+  new Card(window.mrnOnline.cards['respite']),
+  new Card(window.mrnOnline.cards['fog']),
+  new Card(window.mrnOnline.cards['fog']),
+  new Card(window.mrnOnline.cards['fog']),
+  new Card(window.mrnOnline.cards['fog']),
+  new Card(window.mrnOnline.cards['verdantForce'])
+];
+
 </script>
 </head>
 <body>
@@ -285,6 +412,8 @@ function sendMessage() {
 <button onClick="javascript:join()">Join</button>
 <button onClick="javascript:sendMessage()">Send message</button>
 <div id="inhalt"></div>
+<div id="self">
+</div>
 <div id="players">
 </div>
 <textarea id="messages">
