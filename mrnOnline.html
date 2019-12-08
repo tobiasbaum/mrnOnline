@@ -24,35 +24,108 @@ class OtherPlayer {
     return this.conn.peer;
   }
 
-  sendData(d) {
-    this.conn.send(d);
+}
+
+class Database {
+
+  constructor() {
+    this.times = {};
+    this.data = {};
+  }
+
+  put(time, id, data) {
+    if (id in this.times) {
+      var lastTime = this.times[id];
+      if (lastTime < time) {
+        this.times[id] = time;
+        this.data[id] = data;
+        return 'update';
+      } else {
+        return 'ignore';
+      }
+    } else {
+      this.times[id] = time;
+      this.data[id] = data;
+      return 'add';
+    }
   }
 }
 
-class GameField {
+class DistributedDatabaseSystem {
 
-  constructor() {
-    this.myself = null;
+  constructor(ownName) {
+    this.ownName = ownName;
+    this.time = 0;
+    this.otherNames = [];
     this.others = [];
+    this.callbacks = {add: {}, update: {}, ignore: {}};
+    this.databases = {};
   }
 
-  addMyself(id, name) {
-    this.myself = new SelfPlayer(id, name);
-  }
-
-  addOtherPlayer(conn) {
-    this.others.push(new OtherPlayer(conn));
+  addNode(conn) {
+    this.otherNames.push(conn.peer);
+    this.others.push(conn);
     var _this = this;
     conn.on('data', function(d) {
       _this.handleData(d);
     });
-    this.updatePlayers();
   }
 
   handleData(d) {
-    if (d.type === 'message') {
-      this.addMessage(d.content);
+    this.ensureDbExists(d.db);
+    var eventType = this.databases[d.db].put(d.t, d.id, d.dta);
+    if (this.callbacks[eventType][d.db]) {
+      this.callbacks[eventType][d.db](d.id, d.dta);
     }
+  }
+  
+  ensureDbExists(dbName) {
+    if (!this.databases[dbName]) {
+      this.databases[dbName] = new Database();
+    }
+  }
+  
+  add(listDb, data) {
+    this.put(listDb, this.ownName + this.time, data);
+  }
+  
+  put(database, id, data) {
+    var packet = {
+      src: this.ownName,
+      t: this.time++,
+      rcv: this.otherNames,
+      db: database,
+      id: id,
+      dta: data
+    };
+    this.others.forEach(function(x) {
+      x.send(packet);
+    })
+    this.handleData(packet);
+  }
+  
+  on(eventType, database, action) {
+    this.callbacks[eventType][database] = action;
+  }
+
+}
+
+class GameField {
+
+  constructor(ownId, ownName) {
+    this.myself = null;
+    this.others = [];
+    this.db = new DistributedDatabaseSystem();
+    var _this = this;
+    this.db.on('add', 'messages', function(id, msg) {_this.handleAddedMessage(msg)});
+    
+    this.myself = new SelfPlayer(ownId, ownName);
+  }
+
+  addOtherPlayer(conn) {
+    this.db.addNode(conn);
+    this.others.push(new OtherPlayer(conn));
+    this.updatePlayers();
   }
 
   updatePlayers() {
@@ -64,17 +137,10 @@ class GameField {
   }
 
   sendMessage(msg) {
-    var d = {
-      type: 'message',
-      content: msg
-    }
-    this.others.forEach(function(x) {
-      x.sendData(d);
-    })
-    this.addMessage(msg);
+    this.db.add('messages', msg);
   }
 
-  addMessage(msg) {
+  handleAddedMessage(msg) {
     $('#messages').append(msg + '\n');
   }
 }
@@ -84,8 +150,8 @@ function createPeer(name) {
          return;
      }
      window.mrnOnline = {};
-     window.mrnOnline.gameField = new GameField();
-     var peer = new Peer(null, {host: '192.168.178.30', port: 9000, key: 'peerjs'});
+     //var peer = new Peer(null, {host: '192.168.178.30', port: 9000, key: 'peerjs'});
+     var peer = new Peer(null, {host: 'localhost', port: 9000, key: 'peerjs'});
      peer.on('error', function (err) {
          console.log(err);
          alert('' + err);
@@ -93,7 +159,7 @@ function createPeer(name) {
      peer.on('open', function(id) {
          //alert('My peer ID is: ' + id);
          $('#inhalt').html('My peer ID is: ' + id);
-         window.mrnOnline.gameField.addMyself(id, name);
+         window.mrnOnline.gameField = new GameField(id, name);
      });
      peer.on('connection', function(conn) {
          //alert('Got connection ' + conn);
