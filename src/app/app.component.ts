@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { GameField, Card, CardType } from './domain/game-field';
+import { GameFieldStoreService } from './game-field-store.service';
 
 declare var Peer: any;
 
@@ -11,22 +12,26 @@ declare var Peer: any;
 export class AppComponent {
   title = 'mrnOnline';
 
+  constructor(public fieldService: GameFieldStoreService) {
+  }
+
   createPeer(name: string) {
     if (window.mrnOnline.gameField) {
         return;
     }
     //var peer = new Peer(null, {host: '192.168.178.30', port: 9000, key: 'peerjs'});
     var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
-    peer.on('error', function (err: any) {
+    peer.on('error', (err: any) => {
         console.log(err);
         alert('' + err);
     });
-    peer.on('open', function(id: string) {
+    peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
         $('#inhalt').html('My peer ID is: ' + id);
         window.mrnOnline.gameField = new GameField(peer, id, name);
+        this.fieldService.gameField.next(window.mrnOnline.gameField);
     });
-    peer.on('connection', function(conn: any) {
+    peer.on('connection', (conn: any) => {
         //alert('Got connection ' + conn);
         window.mrnOnline.gameField.addOtherPlayer(conn);
     });

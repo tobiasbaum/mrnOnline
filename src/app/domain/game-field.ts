@@ -565,7 +565,6 @@ class CardType {
       this.others = [];
       this.db = new DistributedDatabaseSystem(peer, ownId);
       var _this = this;
-      this.db.on('add', 'messages', function(id: undefined, msg: any) {_this.handleAddedMessage(msg)});
       this.db.on('add', 'playerNames', function(id: string, name: any) {_this.handleChangedPlayerName(id, name)});
       this.db.on('update', 'playerNames', function(id: string, name: any) {_this.handleChangedPlayerName(id, name)});
       this.db.on('update', 'lifes', function(id: undefined, cnt: any) {_this.updatePlayers()});
@@ -574,6 +573,10 @@ class CardType {
   
       this.myself = new SelfPlayer(ownId, ownName, window.mrnOnline.deck, this.db);
       this.db.put('playerNames', ownId, ownName);
+    }
+
+    registerMessageHandler(handler: Function) {
+        this.db.on('add', 'messages', handler);
     }
   
     connectToOtherPlayer(id: string) {
@@ -618,10 +621,6 @@ class CardType {
       this.db.add('messages', msg);
     }
   
-    handleAddedMessage(msg: string) {
-      $('#messages').append('<div>' + msg + '</div>\n');
-    }
-
     drawCard() {
         this.myself.drawCard();
         this.updateSelf();
