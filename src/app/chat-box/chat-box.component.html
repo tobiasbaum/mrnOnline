@@ -1,4 +1,12 @@
 <h2>Chat</h2>
-<div id="messages">
+<div>
+    <div *ngFor="let m of messages">
+        <ng-container *ngIf="m.tr === ''">
+            <span [style.color]="m.color">{{m.tc}}</span>
+        </ng-container>
+        <ng-container *ngIf="m.tr !== ''">
+            <span [style.color]="m.color">{{m.tc}}: </span>{{m.tr}}
+        </ng-container>
+    </div>
 </div>
 <button (click)="this.sendMessage()">Send message</button>

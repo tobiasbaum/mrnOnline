@@ -29,7 +29,7 @@ export class AppComponent {
         //alert('My peer ID is: ' + id);
         $('#inhalt').html('My peer ID is: ' + id);
         window.mrnOnline.gameField = new GameField(peer, id, name);
-        this.fieldService.gameField.next(window.mrnOnline.gameField);
+        this.fieldService.init(window.mrnOnline.gameField);
     });
     peer.on('connection', (conn: any) => {
         //alert('Got connection ' + conn);

@@ -247,8 +247,12 @@ class CardType {
       return ret;
     }
   
-    makeColored(msg: string) {
-      return '<span style="color:' + this.color + '">' + msg + '</span>';
+    makeColored(tc: string, tr: string): MsgData {
+        return {
+            color: this.color,
+            tc: tc,
+            tr: tr
+        }
     }
   
     drawCard() {
@@ -347,7 +351,7 @@ class CardType {
     }
   
     sendNotification(msg: string) {
-      this.db.add('messages', this.makeColored(msg));
+      this.db.add('messages', this.makeColored(msg, ''));
     }
   
   }
@@ -554,6 +558,12 @@ class CardType {
     }
   
   }
+
+  export interface MsgData {
+      color: string;
+      tc: string;
+      tr: string;
+  }
   
   class GameField {
 
@@ -614,10 +624,10 @@ class CardType {
     }
   
     sendMessage(msg: string) {
-      this.sendMessageRaw(this.myself.makeColored(this.myself.name + ': ') + msg);
+      this.sendMessageRaw(this.myself.makeColored(this.myself.name, msg));
     }
   
-    sendMessageRaw(msg: string) {
+    sendMessageRaw(msg: MsgData) {
       this.db.add('messages', msg);
     }
   

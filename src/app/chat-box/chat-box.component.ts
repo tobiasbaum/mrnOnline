@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { GameField } from '../domain/game-field';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Output } from '@angular/core';
+import { GameField, MsgData } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 
 @Component({
@@ -9,15 +9,19 @@ import { GameFieldStoreService } from '../game-field-store.service';
 })
 export class ChatBoxComponent implements OnInit {
 
-  constructor(field: GameFieldStoreService) { 
-    field.gameField.subscribe(gf => gf.registerMessageHandler((id: undefined, msg: any) => this.handleAddedMessage(msg)));
+  @Output()
+  public messages: MsgData[] = [];
+
+  constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) { 
+    field.subscribe(gf => gf.registerMessageHandler((id: undefined, msg: any) => this.handleAddedMessage(msg)));
   }
 
   ngOnInit(): void {
   }
 
-  handleAddedMessage(msg: string) {
-    $('#messages').append('<div>' + msg + '</div>\n');
+  handleAddedMessage(msg: MsgData) {
+    this.messages.push(msg);
+    this.cdr.detectChanges();
   }
 
 sendMessage(): void {
