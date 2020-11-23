@@ -6,13 +6,15 @@ import { AppComponent } from './app.component';
 import { ChatBoxComponent } from './chat-box/chat-box.component';
 import { SelfPlayerComponent } from './self-player/self-player.component';
 import { CardComponent } from './card/card.component';
+import { OtherPlayerComponent } from './other-player/other-player.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ChatBoxComponent,
     SelfPlayerComponent,
-    CardComponent
+    CardComponent,
+    OtherPlayerComponent
   ],
   imports: [
     BrowserModule,

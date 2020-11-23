@@ -365,7 +365,9 @@ class CardType {
   
   }
   
-  class OtherPlayer {
+  export class OtherPlayer {
+    private subject: Subject<void> = new Subject();
+
     constructor(public id: string, public db: DistributedDatabaseSystem) {
     }
   
@@ -392,7 +394,16 @@ class CardType {
       }
       return new CardStash(g.map(x => cardFromDto(x)));
     }
+
+    notifyUpdate() {
+      console.log('notify update ' + this.id);
+      this.subject.next();
+    }
   
+    subscribeForUpdate(arg0: () => void) {
+      this.subject.subscribe(arg0);
+    }
+
   }
   
   export interface MsgData {
@@ -403,18 +414,17 @@ class CardType {
   
   class GameField {
     private db: DistributedDatabaseSystem;
-    private others: OtherPlayer[];
+    public others: OtherPlayer[];
     public myself: SelfPlayer;
   
     constructor(peer: any, ownId: string, ownName: string) {
       this.others = [];
       this.db = new DistributedDatabaseSystem(peer, ownId);
-      var _this = this;
-      this.db.on('add', 'playerNames', function(id: string, name: any) {_this.handleChangedPlayerName(id, name)});
-      this.db.on('update', 'playerNames', function(id: string, name: any) {_this.handleChangedPlayerName(id, name)});
-      this.db.on('update', 'lifes', function(id: undefined, cnt: any) {_this.updatePlayers()});
-      this.db.on('update', 'graveyards', function(id: undefined, cards: any) {_this.updatePlayers()});
-      this.db.on('update', 'tables', function(id: undefined, cards: any) {_this.updatePlayers()});
+      this.db.on('add', 'playerNames', (id: string, name: any) => this.updatePlayer(id));
+      this.db.on('update', 'playerNames', (id: string, name: any) => this.updatePlayer(id));
+      this.db.on('update', 'lifes', (id: string, cnt: any) => this.updatePlayer(id));
+      this.db.on('update', 'graveyards', (id: string, cards: any) => this.updatePlayer(id));
+      this.db.on('update', 'tables', (id: string, cards: any) => this.updatePlayer(id));
   
       this.myself = new SelfPlayer(ownId, ownName, window.mrnOnline.deck, this.db);
       this.db.put('playerNames', ownId, ownName);
@@ -427,30 +437,17 @@ class CardType {
     connectToOtherPlayer(id: string) {
       this.db.connectToNode(id);
       this.others.push(new OtherPlayer(id, this.db));
-      this.updatePlayers();
+      //this.updatePlayers();
     }
   
     addOtherPlayer(conn: any) {
       this.db.addNode(conn);
       this.others.push(new OtherPlayer(conn.peer, this.db));
-      this.updatePlayers();
+      //this.updatePlayers();
     }
   
-    handleChangedPlayerName(id: string, name: string) {
-      this.updatePlayers();
-    }
-  
-    updatePlayers() {
-      var content = '';
-      this.others.forEach(function(x) {
-        content += '<div id="' + x.name + '"><h2>' + x.name + ' (' + x.id + ')</h2></div>';
-        content += x.lifes + ' Lebenspunkte<br/>';
-        content += 'Ausgelegt:<br/>'
-        content += x.table.formatAll('accessDenied');
-        content += 'Friedhof:<br/>'
-        content += x.graveyard.formatAll('accessDenied');
-      });
-      $('#players').html(content);
+    updatePlayer(id: string) {
+      this.others.find(p => p.id === id)?.notifyUpdate();
     }
   
     sendMessage(msg: string) {

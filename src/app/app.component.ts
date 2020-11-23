@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GameField, Card, CardType } from './domain/game-field';
+import { GameField, Card, CardType, OtherPlayer } from './domain/game-field';
 import { GameFieldStoreService } from './game-field-store.service';
 
 declare var Peer: any;
@@ -71,6 +71,10 @@ join() {
     if (other) {
       window.mrnOnline.gameField.connectToOtherPlayer(other);
     }
+}
+
+get otherPlayers(): OtherPlayer[] {
+  return this.fieldService.gameField.others;
 }
 
 // window.mrnOnline = {};

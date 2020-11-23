@@ -1,0 +1,6 @@
+<div id="{{name}}"><h2>{{name}} ({{id}})</h2></div>
+{{lifes}} Lebenspunkte<br/>
+Ausgelegt:<br/>'
+<mrn-card *ngFor="let c of this.table" [card]="c"></mrn-card><br/>
+Friedhof:<br/>'
+<mrn-card *ngFor="let c of this.graveyard" [card]="c"></mrn-card><br/>

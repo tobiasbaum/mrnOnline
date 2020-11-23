@@ -2,9 +2,8 @@
 <button (click)="this.join()">Join</button>
 <div id="inhalt"></div>
 <mrn-self-player></mrn-self-player>
-<!--<div id="self">
-</div>-->
+
 <h2>Mitspieler</h2>
-<div id="players">
-</div>
+<mrn-other-player *ngFor="let p of otherPlayers" [me]="p"></mrn-other-player>
+
 <mrn-chat-box></mrn-chat-box>
