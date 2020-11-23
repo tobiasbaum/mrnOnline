@@ -205,11 +205,11 @@ class CardType {
     drawCard() {
       let c = this.library.draw();
       if (!c) {
-        this.sendNotification(this.name + ' kann nicht ziehen');
+        this.sendNotification('kann nicht ziehen');
         return;
       }
       this.hand.add(c);
-      this.sendNotification(this.name + ' zieht eine Karte');
+      this.sendNotification('zieht eine Karte');
       this.subject.next();
     }
   
@@ -217,9 +217,9 @@ class CardType {
       this.lifes += diff;
       this.db.put('lifes', this.id, this.lifes);
       if (diff > 0) {
-        this.sendNotification(this.name + ' erhöht Lebenspunkte um ' + diff + ' auf ' + this.lifes);
+        this.sendNotification('erhöht Lebenspunkte um ' + diff + ' auf ' + this.lifes);
       } else {
-        this.sendNotification(this.name + ' verringert Lebenspunkte um ' + -diff + ' auf ' + this.lifes);
+        this.sendNotification('verringert Lebenspunkte um ' + -diff + ' auf ' + this.lifes);
       }
       this.subject.next();
     }
@@ -230,7 +230,7 @@ class CardType {
       card.untap();
       this.graveyard.add(card);
       this.db.put('graveyards', this.id, this.graveyard.toDto());
-      this.sendNotification(this.name + ' legt ' + card.name + ' auf Friedhof');
+      this.sendNotification('legt ' + card.name + ' auf Friedhof');
       this.subject.next();
     }
   
@@ -238,7 +238,7 @@ class CardType {
       let coll = this.getContainingCollection(cardId);
       let card = this.removeFromCollection(coll, cardId);
       this.addToTable(card);
-      this.sendNotification(this.name + ' spielt ' + card.name + ' aus');
+      this.sendNotification('spielt ' + card.name + ' aus');
       this.subject.next();
     }
   
@@ -247,7 +247,7 @@ class CardType {
       let card = this.removeFromCollection(collData, cardId);
       card.tap();
       this.addToTable(card);
-      this.sendNotification(this.name + ' spielt ' + card.name + ' getappt aus');
+      this.sendNotification('spielt ' + card.name + ' getappt aus');
       this.subject.next();
     }
   
@@ -290,7 +290,7 @@ class CardType {
       }
       card.tap();
       this.db.put('tables', this.id, this.table.toDto());
-      this.sendNotification(this.name + ' tappt ' + card.name);
+      this.sendNotification('tappt ' + card.name);
       this.subject.next();
     }
   
@@ -301,12 +301,12 @@ class CardType {
       }
       card.untap();
       this.db.put('tables', this.id, this.table.toDto());
-      this.sendNotification(this.name + ' enttappt ' + card.name);
+      this.sendNotification('enttappt ' + card.name);
       this.subject.next();
     }
   
     sendNotification(msg: string) {
-      this.db.add('messages', this.makeColored(msg, ''));
+      this.db.add('messages', this.makeColored(this.name + ' ' + msg, ''));
     }
   
   }

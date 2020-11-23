@@ -2,11 +2,13 @@
     <button (click)="this.start()">Start</button>
 </ng-container>
 <ng-container *ngIf="state === 'started'">
-    <button (click)="this.waitForOthers()">Auf Mitspieler warten</button>
+    <button (click)="this.waitForOthers()">Neues Spiel starten</button>
     <button (click)="this.join()">Existierendem Spiel beitreten</button>
 </ng-container>
 <ng-container *ngIf="state === 'joined'">
     <mrn-self-player></mrn-self-player>
+
+    <button (click)="dice(6)">Würfel 6</button><button (click)="dice(10)">Würfel 10</button><button (click)="dice(20)">Würfel 20</button>
     
     <h2>Mitspieler</h2>
     <mrn-other-player *ngFor="let p of otherPlayers" [me]="p"></mrn-other-player>
