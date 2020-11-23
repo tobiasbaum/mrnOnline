@@ -9,7 +9,6 @@ import { GameFieldStoreService } from '../game-field-store.service';
 })
 export class ChatBoxComponent implements OnInit {
 
-  @Output()
   public messages: MsgData[] = [];
 
   constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) { 

@@ -1,0 +1,12 @@
+<h2>Eigener Spieler</h2>
+<div>Hand<br/>
+    <mrn-card *ngFor="let c of this.hand" [card]="c" [aPL]="true" [aPT]="true" [aGR]="true"></mrn-card>
+</div>
+    <div>Ausgelegt:<br/>
+        <mrn-card *ngFor="let c of this.table" [card]="c" [aTA]="true" [aUT]="true" [aGR]="true"></mrn-card>
+    </div>
+    <div>Bibliothek: {{this.librarySize()}} Karten. <a (click)="this.drawCard()">Karte ziehen</a></div>
+    <div>Friedhof:<br/>
+        <mrn-card *ngFor="let c of this.graveyard" [card]="c" [aPL]="true" [aPT]="true"></mrn-card>
+    </div>
+    <div>Lebenspunkte: {{this.lifes}} <a (click)="this.increaseLifes()">+</a> <a (click)="this.decreaseLifes()">-</a></div>

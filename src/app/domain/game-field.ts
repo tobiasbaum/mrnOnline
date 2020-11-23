@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { DistributedDatabaseSystem } from './distributed-database';
 
 class CardType {
@@ -53,6 +54,10 @@ class CardType {
   
     get name() {
       return this.type.name;
+    }
+
+    get img() {
+      return this.type.img;
     }
   
     format() {
@@ -110,8 +115,12 @@ class CardType {
     return new Card(cardTypeFromDto(dto.type), dto.id, dto.tapped);
   }
   
-  class CardCollection {
+  class CardCollection implements Iterable<Card> {
     constructor(public cards: Card[]) {
+    }
+
+    [Symbol.iterator](): Iterator<Card, any, undefined> {
+      return this.cards[Symbol.iterator]();
     }
   
     add(card: Card) {
@@ -173,7 +182,7 @@ class CardType {
     return ret;
   }
   
-  class CardStash extends CardCollection {
+  export class CardStash extends CardCollection {
     constructor(cards: Card[]) {
       super(cards);
     }
@@ -202,7 +211,7 @@ class CardType {
     }
   }
   
-  class CardBag extends CardCollection {
+  export class CardBag extends CardCollection {
     constructor(cards: Card[]) {
       super(cards);
     }
@@ -218,6 +227,7 @@ class CardType {
       public lifes: number;
       public color: string;
       public db: DistributedDatabaseSystem;
+      private subject: Subject<void> = new Subject();
 
     constructor(id: string, name: string, deck: Card[], db: DistributedDatabaseSystem) {
       this.id = id;
@@ -234,21 +244,10 @@ class CardType {
       this.color = 'hsl(' + (Math.floor(Math.random() * 72) * 5) + ',90%,40%)';
     }
   
-    format() {
-      let ret = '<div>Hand<br/>';
-      ret += this.hand.formatAll('hand');
-      ret += '</div>';
-      ret += '<div>Ausgelegt:<br/>';
-      ret += this.table.formatAll('table');
-      ret += '</div>';
-      ret += '<div>Bibliothek: ' + this.library.size + ' Karten. <a href="javascript:window.mrnOnline.gameField.drawCard()">Karte ziehen</a></div>';
-      ret += '<div>Friedhof:<br/>';
-      ret += this.graveyard.formatAll('graveyard');
-      ret += '</div>';
-      ret += '<div>Lebenspunkte: ' + this.lifes + ' <a href="javascript:window.mrnOnline.gameField.increaseLifes()">+</a> <a href="javascript:window.mrnOnline.gameField.decreaseLifes()">-</a></div>';
-      return ret;
+    subscribeForUpdate(arg0: () => void): void {
+      this.subject.subscribe(arg0);
     }
-  
+
     makeColored(tc: string, tr: string): MsgData {
         return {
             color: this.color,
@@ -265,6 +264,7 @@ class CardType {
       }
       this.hand.add(c);
       this.sendNotification(this.name + ' zieht eine Karte');
+      this.subject.next();
     }
   
     changeLifeCount(diff: number) {
@@ -275,6 +275,7 @@ class CardType {
       } else {
         this.sendNotification(this.name + ' verringert Lebenspunkte um ' + -diff + ' auf ' + this.lifes);
       }
+      this.subject.next();
     }
   
     putToGraveyard(cardId: number) {
@@ -284,6 +285,7 @@ class CardType {
       this.graveyard.add(card);
       this.db.put('graveyards', this.id, this.graveyard.toDto());
       this.sendNotification(this.name + ' legt ' + card.name + ' auf Friedhof');
+      this.subject.next();
     }
   
     putIntoPlay(cardId: number) {
@@ -291,6 +293,7 @@ class CardType {
       let card = this.removeFromCollection(coll, cardId);
       this.addToTable(card);
       this.sendNotification(this.name + ' spielt ' + card.name + ' aus');
+      this.subject.next();
     }
   
     putIntoPlayTapped(cardId: number) {
@@ -299,9 +302,10 @@ class CardType {
       card.tap();
       this.addToTable(card);
       this.sendNotification(this.name + ' spielt ' + card.name + ' getappt aus');
+      this.subject.next();
     }
   
-    removeFromCollection(collData: any, cardId: number) {
+    private removeFromCollection(collData: any, cardId: number) {
       let card = collData.obj.remove(cardId);
       if (collData.countOnly) {
         this.db.put(collData.name, this.id, collData.obj.size);
@@ -314,6 +318,7 @@ class CardType {
     addToTable(card: Card) {
       this.table.add(card);
       this.db.put('tables', this.id, this.table.toDto());
+      this.subject.next();
     }
   
     getContainingCollection(cardId: number) {
@@ -340,6 +345,7 @@ class CardType {
       card.tap();
       this.db.put('tables', this.id, this.table.toDto());
       this.sendNotification(this.name + ' tappt ' + card.name);
+      this.subject.next();
     }
   
     untap(cardId: number) {
@@ -350,6 +356,7 @@ class CardType {
       card.untap();
       this.db.put('tables', this.id, this.table.toDto());
       this.sendNotification(this.name + ' enttappt ' + card.name);
+      this.subject.next();
     }
   
     sendNotification(msg: string) {
@@ -362,11 +369,11 @@ class CardType {
     constructor(public id: string, public db: DistributedDatabaseSystem) {
     }
   
-    get name() {
+    get name(): string {
       return this.db.get('playerNames', this.id);
     }
   
-    get lifes() {
+    get lifes(): number {
       return this.db.get('lifes', this.id);
     }
   
@@ -378,7 +385,7 @@ class CardType {
       return this.getCardStash('tables');
     }
   
-    getCardStash(stashId: string) {
+    getCardStash(stashId: string): CardStash {
       let g: DtoCard[] = this.db.get(stashId, this.id);
       if (!g) {
         g = [];
@@ -395,7 +402,6 @@ class CardType {
   }
   
   class GameField {
-
     private db: DistributedDatabaseSystem;
     private others: OtherPlayer[];
     public myself: SelfPlayer;
@@ -435,7 +441,6 @@ class CardType {
     }
   
     updatePlayers() {
-      this.updateSelf();
       var content = '';
       this.others.forEach(function(x) {
         content += '<div id="' + x.name + '"><h2>' + x.name + ' (' + x.id + ')</h2></div>';
@@ -448,10 +453,6 @@ class CardType {
       $('#players').html(content);
     }
   
-    updateSelf() {
-      $('#self').html(this.myself.format());
-    }
-  
     sendMessage(msg: string) {
       this.sendMessageRaw(this.myself.makeColored(this.myself.name, msg));
     }
@@ -462,42 +463,34 @@ class CardType {
   
     drawCard() {
         this.myself.drawCard();
-        this.updateSelf();
        }
        
        increaseLifes() {
         this.myself.changeLifeCount(1);
-        this.updateSelf();
        }
        
        decreaseLifes() {
         this.myself.changeLifeCount(-1);
-        this.updateSelf();
        }
        
        putToGraveyard(cardId: number) {
         this.myself.putToGraveyard(cardId);
-        this.updateSelf();
        }
        
        tap(cardId: number) {
         this.myself.tap(cardId);
-        this.updateSelf();
        }
        
        untap(cardId: number) {
         this.myself.untap(cardId);
-        this.updateSelf();
        }
        
        putIntoPlay(cardId: number) {
         this.myself.putIntoPlay(cardId);
-        this.updateSelf();
        }
        
        putIntoPlayTapped(cardId: number) {
         this.myself.putIntoPlayTapped(cardId);
-        this.updateSelf();
        }   
     }
 

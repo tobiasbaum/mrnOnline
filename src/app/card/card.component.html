@@ -1,0 +1,12 @@
+<div class="dropdown">
+    <table class="card" [class.tapped]="card.tapped">
+        <tr><td><img class="card" src="{{card.img}}" /></td></tr>
+    </table>
+    <div class="dropdown-content">
+      <a *ngIf="aTA" (click)="gameField.tap(card.id)">tappen</a>
+      <a *ngIf="aUT" (click)="gameField.untap(card.id)">enttappen</a>
+      <a *ngIf="aPL" (click)="gameField.putIntoPlay(card.id)">ins Spiel bringen</a>
+      <a *ngIf="aPT" (click)="gameField.putIntoPlayTapped(card.id)">getappt ins Spiel bringen</a>
+      <a *ngIf="aGR" (click)="gameField.putToGraveyard(card.id)">auf Friedhof legen</a>
+    </div>
+</div>
