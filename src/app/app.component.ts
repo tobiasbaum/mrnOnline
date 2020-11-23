@@ -39,8 +39,10 @@ export class AppComponent {
 
 start() {
     this.mapDecksAndCards();
-    var name = prompt('Name');
+    let def = localStorage.getItem('mrnUserName');
+    let name = prompt('Name', def !== null ? def : undefined);
     if (name) {
+      localStorage.setItem('mrnUserName', name);
       this.createPeer(name);
     }
 }
