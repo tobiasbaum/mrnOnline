@@ -16,6 +16,14 @@ export class SelfPlayerComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  get name(): string {
+    return this.field.gameField.myself.name;
+  }
+
+  get id(): string {
+    return this.field.gameField.myself.id;
+  }
+
   get gameField(): GameField {
     return this.field.gameField;
   }

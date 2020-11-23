@@ -1,9 +1,15 @@
-<button (click)="this.start()">Start</button>
-<button (click)="this.join()">Join</button>
-<div id="inhalt"></div>
-<mrn-self-player></mrn-self-player>
-
-<h2>Mitspieler</h2>
-<mrn-other-player *ngFor="let p of otherPlayers" [me]="p"></mrn-other-player>
-
-<mrn-chat-box></mrn-chat-box>
+<ng-container *ngIf="state === 'initial'">
+    <button (click)="this.start()">Start</button>
+</ng-container>
+<ng-container *ngIf="state === 'started'">
+    <button (click)="this.waitForOthers()">Auf Mitspieler warten</button>
+    <button (click)="this.join()">Existierendem Spiel beitreten</button>
+</ng-container>
+<ng-container *ngIf="state === 'joined'">
+    <mrn-self-player></mrn-self-player>
+    
+    <h2>Mitspieler</h2>
+    <mrn-other-player *ngFor="let p of otherPlayers" [me]="p"></mrn-other-player>
+    
+    <mrn-chat-box></mrn-chat-box>    
+</ng-container>

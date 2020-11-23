@@ -12,6 +12,8 @@ declare var Peer: any;
 export class AppComponent {
   title = 'mrnOnline';
 
+  public state: string = 'initial';
+
   constructor(public fieldService: GameFieldStoreService) {
   }
 
@@ -27,9 +29,9 @@ export class AppComponent {
     });
     peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
-        $('#inhalt').html('My peer ID is: ' + id);
         window.mrnOnline.gameField = new GameField(peer, id, name);
         this.fieldService.init(window.mrnOnline.gameField);
+        this.state = 'started';
     });
     peer.on('connection', (conn: any) => {
         //alert('Got connection ' + conn);
@@ -70,7 +72,12 @@ join() {
     var other = prompt('ID des Mitspielers');
     if (other) {
       window.mrnOnline.gameField.connectToOtherPlayer(other);
+      this.state = 'joined';
     }
+}
+
+waitForOthers() {
+  this.state = 'joined';
 }
 
 get otherPlayers(): OtherPlayer[] {
