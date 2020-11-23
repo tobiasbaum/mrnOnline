@@ -17,11 +17,6 @@ class CardType {
     return new CardType(dto.name, dto.img);
   }
   
-  class Action {
-    constructor(public text: string, public func: string) {
-    }
-  }
-  
   var cardCnt = 0;
   
   class Card {
@@ -58,38 +53,6 @@ class CardType {
 
     get img() {
       return this.type.img;
-    }
-  
-    format() {
-      let t = this.tapped ? ' tapped' : '';
-      let f;
-      if (this.type.img) {
-        f = '<img class="card" src="' + this.type.img + '" />';
-      } else {
-        f = this.name;
-      }
-      return '<table class="card' + t + '"><tr><td>' + f + '</td></tr></table>';
-    }
-  
-    getActions(currentPosition: string) {
-      if (currentPosition === 'accessDenied') {
-        return [];
-      }
-      let ret = [];
-      if (currentPosition === 'table') {
-        if (this.tapped) {
-          ret.push(new Action('Enttappen', 'window.mrnOnline.gameField.untap(' + this.id + ')'));
-        } else {
-          ret.push(new Action('Tappen', 'window.mrnOnline.gameField.tap(' + this.id + ')'));
-        }
-      } else {
-          ret.push(new Action('ins Spiel bringen', 'window.mrnOnline.gameField.putIntoPlay(' + this.id + ')'));
-          ret.push(new Action('getappt ins Spiel bringen', 'window.mrnOnline.gameField.putIntoPlayTapped(' + this.id + ')'));
-      }
-      if (currentPosition !== 'graveyard') {
-        ret.push(new Action('auf Friedhof legen', 'window.mrnOnline.gameField.putToGraveyard(' + this.id + ')'));
-      }
-      return ret;
     }
   
     toDto() {
@@ -160,26 +123,9 @@ class CardType {
       return this.cards.length;
     }
   
-    formatAll(currentPosition: string) {
-      let ret = '';
-      this.cards.forEach(function (x) {
-        ret += withDropdown(x.format(), x.getActions(currentPosition));
-      });
-      return ret;
-    }
-  
     toDto() {
       return this.cards.map(x => x.toDto());
     }
-  }
-  
-  function withDropdown(content: string, actions: Action[]) {
-    let ret = '<div class="dropdown">' + content + '<div class="dropdown-content">';
-    for (let i = 0; i < actions.length; i++) {
-      ret += '<a href="javascript:' + actions[i].func + '">' + actions[i].text + '</a>';
-    }
-    ret += '</div></div>';
-    return ret;
   }
   
   export class CardStash extends CardCollection {
