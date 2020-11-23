@@ -1,5 +1,7 @@
-<h2>Chat</h2>
-<div>
+<fieldset>
+<legend>Chat</legend>
+<button (click)="this.sendMessage()">Send message</button>
+<div class="chatbox">
     <div *ngFor="let m of messages">
         <ng-container *ngIf="m.tr === ''">
             <span [style.color]="m.color">{{m.tc}}</span>
@@ -9,4 +11,4 @@
         </ng-container>
     </div>
 </div>
-<button (click)="this.sendMessage()">Send message</button>
+</fieldset>
