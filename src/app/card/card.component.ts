@@ -13,19 +13,7 @@ export class CardComponent implements OnInit {
   public card!: Card;
 
   @Input()
-  public aTA: boolean = false;
-
-  @Input()
-  public aUT: boolean = false;
-
-  @Input()
-  public aPL: boolean = false;
-
-  @Input()
-  public aPT: boolean = false;
-
-  @Input()
-  public aGR: boolean = false;
+  public act: string = '';
 
   constructor(private field: GameFieldStoreService) { }
 
