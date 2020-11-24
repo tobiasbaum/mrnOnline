@@ -1,3 +1,7 @@
 <div>{{this.name}}: {{this.collection.size}} Karten.<br/>
     <mrn-card *ngFor="let c of this.collection" [card]="c" [act]="this.act"></mrn-card>
+    <ng-container *ngIf="this.collection.size === 0">
+        <br/>
+        <br/>
+    </ng-container>
 </div>

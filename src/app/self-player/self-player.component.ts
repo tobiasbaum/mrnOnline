@@ -60,4 +60,18 @@ export class SelfPlayerComponent implements OnInit {
     this.field.gameField.increaseLifes();
   }
 
+  multiLifeDecrease() {
+    let count = prompt('Anzahl verlorener Leben');
+    if (count) {
+      this.field.gameField.myself.changeLifeCount(-Number.parseInt(count));
+    }
+  }
+
+  multiLifeIncrease() {
+    let count = prompt('Anzahl zusätzlicher Leben');
+    if (count) {
+      this.field.gameField.myself.changeLifeCount(Number.parseInt(count));
+    }
+  }
+
 }
