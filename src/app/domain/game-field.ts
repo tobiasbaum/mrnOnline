@@ -78,17 +78,15 @@ class CardType {
     return new Card(cardTypeFromDto(dto.type), dto.id, dto.tapped);
   }
   
-  export class CardCollection implements Iterable<Card> {
+  export abstract class CardCollection implements Iterable<Card> {
     constructor(public cards: Card[]) {
     }
 
     [Symbol.iterator](): Iterator<Card, any, undefined> {
       return this.cards[Symbol.iterator]();
     }
-  
-    add(card: Card) {
-      this.cards.push(card);
-    }
+
+    abstract add(card: Card): void;
   
     contains(cardId: number) {
       for (let i = 0; i < this.cards.length; i++) {
@@ -133,6 +131,10 @@ class CardType {
       super(cards);
     }
   
+    add(card: Card): void {
+      this.cards.push(card);
+    }
+  
     shuffle() {
       var currentIndex = this.cards.length;
       var temporaryValue;
@@ -161,6 +163,16 @@ class CardType {
     constructor(cards: Card[]) {
       super(cards);
     }
+
+    add(card: Card): void {
+      let idx = this.cards.findIndex(x => x.type.name === card.type.name);
+      if (idx < 0) {
+        this.cards.push(card);
+      } else {
+        this.cards.splice(idx, 0, card);
+      }
+    }
+  
   }
   
   class SelfPlayer {
