@@ -1,12 +1,14 @@
-<h2>Eigener Spieler: {{name}} (ID: {{id}})</h2>
+<fieldset>
+<legend><b>{{name}}</b> (ID: {{id}})</legend>
 <div>Hand<br/>
     <mrn-card *ngFor="let c of this.hand" [card]="c" [aPL]="true" [aPT]="true" [aGR]="true"></mrn-card>
 </div>
     <div>Ausgelegt:<br/>
         <mrn-card *ngFor="let c of this.table" [card]="c" [aTA]="true" [aUT]="true" [aGR]="true"></mrn-card>
     </div>
-    <div>Bibliothek: {{this.librarySize()}} Karten. <a (click)="this.drawCard()">Karte ziehen</a></div>
-    <div>Friedhof:<br/>
+    <div>Bibliothek: {{this.librarySize()}} Karten. <button (click)="this.drawCard()">Karte ziehen</button></div>
+    <div>Friedhof: {{this.graveyard.size}} Karten.<br/>
         <mrn-card *ngFor="let c of this.graveyard" [card]="c" [aPL]="true" [aPT]="true"></mrn-card>
     </div>
-    <div>Lebenspunkte: {{this.lifes}} <a (click)="this.increaseLifes()">+</a> <a (click)="this.decreaseLifes()">-</a></div>
+    <div>Lebenspunkte: {{this.lifes}} <button (click)="this.increaseLifes()">+</button> <button (click)="this.decreaseLifes()">-</button></div>
+</fieldset>
