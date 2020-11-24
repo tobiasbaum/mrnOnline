@@ -1,7 +1,5 @@
 <div class="dropdown">
-    <table class="card" [class.tapped]="card.tapped">
-        <tr><td><img class="card" src="{{card.img}}" /></td></tr>
-    </table>
+    <img class="card" [class.tapped]="card.tapped" [class.large]="this.large" (click)="this.large = !this.large" src="{{card.img}}" />
     <div class="dropdown-content">
       <a *ngIf="act.includes('TA') && !card.tapped" (click)="gameField.tap(card.id)">tappen</a>
       <a *ngIf="act.includes('UT') && card.tapped" (click)="gameField.untap(card.id)">enttappen</a>

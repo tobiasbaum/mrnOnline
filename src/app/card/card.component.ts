@@ -15,6 +15,8 @@ export class CardComponent implements OnInit {
   @Input()
   public act: string = '';
 
+  public large: boolean = false;
+
   constructor(private field: GameFieldStoreService) { }
 
   ngOnInit(): void {
