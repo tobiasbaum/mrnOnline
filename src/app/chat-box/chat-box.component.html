@@ -1,6 +1,6 @@
 <fieldset>
 <legend>Chat</legend>
-<button (click)="this.sendMessage()">Send message</button>
+<button (click)="this.sendMessage()">Schreiben ...</button>
 <div class="chatbox">
     <div *ngFor="let m of messages">
         <ng-container *ngIf="m.tr === ''">
