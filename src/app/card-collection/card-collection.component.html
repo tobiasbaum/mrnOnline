@@ -1,0 +1,3 @@
+<div>{{this.name}}: {{this.collection.size}} Karten.<br/>
+    <mrn-card *ngFor="let c of this.collection" [card]="c" [act]="this.act"></mrn-card>
+</div>

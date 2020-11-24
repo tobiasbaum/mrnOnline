@@ -78,7 +78,7 @@ class CardType {
     return new Card(cardTypeFromDto(dto.type), dto.id, dto.tapped);
   }
   
-  class CardCollection implements Iterable<Card> {
+  export class CardCollection implements Iterable<Card> {
     constructor(public cards: Card[]) {
     }
 

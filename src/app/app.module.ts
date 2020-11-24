@@ -7,6 +7,7 @@ import { ChatBoxComponent } from './chat-box/chat-box.component';
 import { SelfPlayerComponent } from './self-player/self-player.component';
 import { CardComponent } from './card/card.component';
 import { OtherPlayerComponent } from './other-player/other-player.component';
+import { CardCollectionComponent } from './card-collection/card-collection.component';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { OtherPlayerComponent } from './other-player/other-player.component';
     ChatBoxComponent,
     SelfPlayerComponent,
     CardComponent,
-    OtherPlayerComponent
+    OtherPlayerComponent,
+    CardCollectionComponent
   ],
   imports: [
     BrowserModule,

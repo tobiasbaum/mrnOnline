@@ -1,14 +1,8 @@
 <fieldset>
 <legend><b>{{name}}</b> (ID: {{id}})</legend>
-<div>Hand<br/>
-    <mrn-card *ngFor="let c of this.hand" [card]="c" [act]="'PL,PT,GR'"></mrn-card>
-</div>
-    <div>Ausgelegt:<br/>
-        <mrn-card *ngFor="let c of this.table" [card]="c" [act]="'TA,UT,GR'"></mrn-card>
-    </div>
+    <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR'"></mrn-card-collection>
+    <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,GR'"></mrn-card-collection>
     <div>Bibliothek: {{this.librarySize()}} Karten. <button (click)="this.drawCard()">Karte ziehen</button></div>
-    <div>Friedhof: {{this.graveyard.size}} Karten.<br/>
-        <mrn-card *ngFor="let c of this.graveyard" [card]="c" [act]="'PL,PT'"></mrn-card>
-    </div>
+    <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT'"></mrn-card-collection>
     <div>Lebenspunkte: {{this.lifes}} <button (click)="this.increaseLifes()">+</button> <button (click)="this.decreaseLifes()">-</button></div>
 </fieldset>
