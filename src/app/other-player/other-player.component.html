@@ -2,5 +2,5 @@
     <legend [class.turn]="isCurrentPlayer()">{{name}} ({{id}})</legend>
     {{lifes}} Lebenspunkte<br/>
     <mrn-card-collection [collection]="this.table" name="Ausgelegt"></mrn-card-collection><br/>
-    <mrn-card-collection [collection]="this.graveyard" name="Friedhof"></mrn-card-collection><br/>
+    <mrn-card-collection [collection]="this.graveyard" name="Friedhof" collapsed="true"></mrn-card-collection><br/>
 </fieldset>

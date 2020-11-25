@@ -1,7 +1,13 @@
-<div>{{this.name}}: {{this.collection.size}} Karten.<br/>
-    <mrn-card *ngFor="let c of this.collection" [card]="c" [act]="this.act"></mrn-card>
-    <ng-container *ngIf="this.collection.size === 0">
+<div (click)="this.collapsed = !this.collapsed">{{this.name}}: {{this.collection.size}} Karten.
+    <ng-container *ngIf="collapsed">
+        {{this.cardString()}}
+    </ng-container>
+    <ng-container *ngIf="!collapsed">
         <br/>
-        <br/>
+        <mrn-card *ngFor="let c of this.collection" [card]="c" [act]="this.act"></mrn-card>
+        <ng-container *ngIf="this.collection.size === 0">
+            <br/>
+            <br/>
+        </ng-container>            
     </ng-container>
 </div>
