@@ -22,8 +22,8 @@ export class AppComponent {
     if (window.mrnOnline.gameField) {
         return;
     }
-    //var peer = new Peer(null, {host: '192.168.178.30', port: 9000, key: 'peerjs'});
-    var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
+    //var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
+    var peer = new Peer(undefined, {});
     peer.on('error', (err: any) => {
         console.log(err);
         alert('' + err);
