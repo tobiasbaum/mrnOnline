@@ -1,4 +1,4 @@
-<div (click)="this.collapsed = !this.collapsed">{{this.name}}: {{this.collection.size}} Karten.
+<div><span (click)="this.collapsed = !this.collapsed">{{this.name}}: {{this.collection.size}} Karten.</span>
     <ng-container *ngIf="collapsed">
         {{this.cardString()}}
     </ng-container>
