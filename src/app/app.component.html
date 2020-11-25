@@ -6,6 +6,8 @@
     <button (click)="this.join()">Existierendem Spiel beitreten ...</button>
 </ng-container>
 <ng-container *ngIf="state === 'joined'">
+    <button *ngIf="!fieldService.gameField.currentPlayerName" (click)="fieldService.gameField.shuffleStartPlayer()">Zufälligen Startspieler wählen</button>
+    <button *ngIf="isOwnTurn()" (click)="fieldService.gameField.nextPlayer()">Zug beenden</button>
     <mrn-self-player></mrn-self-player>
 
     <button (click)="dice(6)">Würfel 6</button><button (click)="dice(10)">Würfel 10</button><button (click)="dice(20)">Würfel 20</button>

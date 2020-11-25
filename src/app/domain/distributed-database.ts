@@ -10,7 +10,7 @@ class Database {
 
   put(time: number, id: string, data: any) {
     if (id in this.times) {
-      var lastTime = this.times[id];
+      let lastTime = this.times[id];
       if (lastTime < time) {
         this.times[id] = time;
         this.data[id] = data;
@@ -91,8 +91,9 @@ export class DistributedDatabaseSystem {
 
   handleData(d: any) {
     console.log('received: ' + JSON.stringify(d));
+    this.time = Math.max(this.time, d.t);
     this.ensureDbExists(d.db);
-    var eventType = this.databases[d.db].put(d.t, d.id, d.dta);
+    let eventType = this.databases[d.db].put(d.t, d.id, d.dta);
     if (this.callbacks[eventType][d.db]) {
       this.callbacks[eventType][d.db](d.id, d.dta);
     }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { GameField, Card, CardType, OtherPlayer } from './domain/game-field';
 import { GameFieldStoreService } from './game-field-store.service';
 
@@ -14,7 +14,8 @@ export class AppComponent {
 
   public state: string = 'initial';
 
-  constructor(public fieldService: GameFieldStoreService) {
+  constructor(public fieldService: GameFieldStoreService, cdr: ChangeDetectorRef) {
+    fieldService.subscribe(f => f.registerPlayerChangeHandler(() => {console.log('hallo'); cdr.detectChanges()}));
   }
 
   createPeer(name: string) {
@@ -83,6 +84,10 @@ waitForOthers() {
 dice(sides: number) {
   let n = Math.floor(Math.random() * sides) + 1;
   this.fieldService.gameField.myself.sendNotification('würfelt ' + n + ' (von ' + sides + ')');
+}
+
+isOwnTurn(): boolean {
+  return this.fieldService.gameField.currentPlayerName === this.fieldService.gameField.myself.name;
 }
 
 get otherPlayers(): OtherPlayer[] {

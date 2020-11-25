@@ -392,7 +392,12 @@ class CardType {
         this.db.on('add', 'messages', handler);
     }
   
-    connectToOtherPlayer(id: string) {
+    registerPlayerChangeHandler(handler: Function) {
+      this.db.on('add', 'currentPlayer', handler);
+      this.db.on('update', 'currentPlayer', handler);
+  }
+
+  connectToOtherPlayer(id: string) {
       this.db.connectToNode(id);
       this.others.push(new OtherPlayer(id, this.db));
       //this.updatePlayers();
@@ -402,6 +407,32 @@ class CardType {
       this.db.addNode(conn);
       this.others.push(new OtherPlayer(conn.peer, this.db));
       //this.updatePlayers();
+    }
+
+    get currentPlayerName(): string|undefined {
+      return this.db.get('currentPlayer', 'name');
+    }
+
+    shuffleStartPlayer() {
+      let idx = Math.floor(Math.random() * (this.others.length + 1));
+      if (idx === 0) {
+        this.setCurrentPlayer(this.myself.name);
+      } else {
+        this.setCurrentPlayer(this.others[idx - 1].name);
+      }
+    }
+  
+    nextPlayer() {
+      if (this.others.length === 0) {
+        this.setCurrentPlayer(this.myself.name);
+      } else {
+        this.setCurrentPlayer(this.others[0].name);
+      }
+    }
+
+    setCurrentPlayer(name: string) {
+      this.db.put('currentPlayer', 'name', name);
+      this.sendMessageRaw({color: 'black', tc: name + ' ist am Zug', tr: ''});
     }
   
     updatePlayer(id: string) {

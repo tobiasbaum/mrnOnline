@@ -21,6 +21,14 @@ export class ChatBoxComponent implements OnInit {
   handleAddedMessage(msg: MsgData) {
     this.messages.push(msg);
     this.cdr.detectChanges();
+    this.scrollToBottom();
+  }
+
+  scrollToBottom() {
+    let elem = document.getElementById('chatbox');
+    if (elem) {
+      elem.scrollTop = elem.scrollHeight;
+    }
   }
 
 sendMessage(): void {

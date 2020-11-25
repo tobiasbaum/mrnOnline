@@ -74,4 +74,8 @@ export class SelfPlayerComponent implements OnInit {
     }
   }
 
+  isCurrentPlayer(): boolean {
+    return this.field.gameField.currentPlayerName === this.field.gameField.myself.name;
+  }
+
 }

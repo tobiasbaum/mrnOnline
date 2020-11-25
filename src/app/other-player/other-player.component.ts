@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { CardBag, CardStash, OtherPlayer } from '../domain/game-field';
+import { GameFieldStoreService } from '../game-field-store.service';
 
 @Component({
   selector: 'mrn-other-player',
@@ -11,7 +12,7 @@ export class OtherPlayerComponent implements OnInit {
   @Input()
   public me!: OtherPlayer;
 
-  constructor(private cdr: ChangeDetectorRef) { }
+  constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.me.subscribeForUpdate(() => this.cdr.detectChanges());
@@ -35,6 +36,10 @@ export class OtherPlayerComponent implements OnInit {
 
   get graveyard(): CardStash {
     return this.me.graveyard;
+  }
+
+  isCurrentPlayer(): boolean {
+    return this.field.gameField.currentPlayerName === this.me.name;
   }
 
 }
