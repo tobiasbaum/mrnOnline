@@ -318,7 +318,7 @@ class CardType {
     }
   
     sendNotification(msg: string) {
-      this.db.add('messages', this.makeColored(this.name + ' ' + msg, ''));
+      this.db.add('messages', this.makeColored(new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}) + ' ' + this.name + ' ' + msg, ''));
     }
   
   }
@@ -440,7 +440,7 @@ class CardType {
     }
   
     sendMessage(msg: string) {
-      this.sendMessageRaw(this.myself.makeColored(this.myself.name, msg));
+      this.sendMessageRaw(this.myself.makeColored(new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}) + ' ' + this.myself.name, msg));
     }
   
     sendMessageRaw(msg: MsgData) {
