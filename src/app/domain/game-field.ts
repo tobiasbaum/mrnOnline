@@ -530,10 +530,6 @@ class CardType {
       this.db.add('messages', msg);
     }
   
-    drawCard() {
-        this.myself.drawCard();
-       }
-       
        increaseLifes() {
         this.myself.changeLifeCount(1);
        }
@@ -542,25 +538,6 @@ class CardType {
         this.myself.changeLifeCount(-1);
        }
        
-       putToGraveyard(cardId: number) {
-        this.myself.putToGraveyard(cardId);
-       }
-       
-       tap(cardId: number) {
-        this.myself.tap(cardId);
-       }
-       
-       untap(cardId: number) {
-        this.myself.untap(cardId);
-       }
-       
-       putIntoPlay(cardId: number) {
-        this.myself.putIntoPlay(cardId);
-       }
-       
-       putIntoPlayTapped(cardId: number) {
-        this.myself.putIntoPlayTapped(cardId);
-       }   
     }
 
 export { GameField, Card, CardType };

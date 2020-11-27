@@ -57,7 +57,7 @@ export class SelfPlayerComponent implements OnInit {
   }
 
   drawCard() {
-    this.field.gameField.drawCard();
+    this.field.gameField.myself.drawCard();
   }
 
   decreaseLifes() {
