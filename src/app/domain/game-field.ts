@@ -278,6 +278,15 @@ class CardType {
       this.subject.next();
     }
   
+    putToHand(cardId: number) {
+      let coll = this.getContainingCollection(cardId);
+      let card = this.removeFromCollection(coll, cardId);
+      card.untap();
+      this.addToHand(card);
+      this.sendNotification('nimmt ' + card.name + ' auf die Hand');
+      this.subject.next();
+    }
+  
     private removeFromCollection(collData: any, cardId: number) {
       let card = collData.obj.remove(cardId);
       if (collData.countOnly) {

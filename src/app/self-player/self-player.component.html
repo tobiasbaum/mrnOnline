@@ -1,10 +1,10 @@
 <fieldset>
 <legend [class.turn]="isCurrentPlayer()"><b>{{name}}</b> (ID: {{id}})</legend>
     <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR'"></mrn-card-collection>
-    <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,GR'"></mrn-card-collection>
+    <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,GR,HA'"></mrn-card-collection>
     <button (click)="this.untapAll()">Alles enttappen</button>
     <div>Bibliothek: {{this.librarySize()}} Karten. <button (click)="this.drawCard()">Karte ziehen</button></div>
-    <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT'" [collapsed]="true"></mrn-card-collection>
+    <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA'" [collapsed]="true"></mrn-card-collection>
     <div>Lebenspunkte: {{this.lifes}}
         <button (click)="this.increaseLifes()">+</button>
         <button (click)="this.decreaseLifes()">-</button>
