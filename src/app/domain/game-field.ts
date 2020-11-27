@@ -193,6 +193,7 @@ class CardType {
       this.db = db;
       this.library = new CardStash(deck);
       this.library.shuffle();
+      this.db.put('librarySizes', this.id, this.library.size);
       this.hand = new CardBag([]);
       this.table = new CardBag([]);
       this.graveyard = new CardStash([]);
@@ -216,13 +217,19 @@ class CardType {
   
     drawCard() {
       let c = this.library.draw();
+      this.db.put('librarySizes', this.id, this.library.size);
       if (!c) {
         this.sendNotification('kann nicht ziehen');
         return;
       }
-      this.hand.add(c);
+      this.addToHand(c);
       this.sendNotification('zieht eine Karte');
       this.subject.next();
+    }
+
+    private addToHand(c: Card) {
+      this.hand.add(c);
+      this.db.put('handSizes', this.id, this.hand.size);
     }
   
     changeLifeCount(diff: number) {
@@ -335,6 +342,14 @@ class CardType {
   
     get lifes(): number {
       return this.db.get('lifes', this.id);
+    }
+  
+    get handSize(): number {
+      return this.db.get('handSizes', this.id);
+    }
+  
+    get librarySize(): number {
+      return this.db.get('librarySizes', this.id);
     }
   
     get graveyard() {

@@ -1,6 +1,6 @@
 <fieldset>
     <legend [class.turn]="isCurrentPlayer()">{{name}} ({{id}})</legend>
-    {{lifes}} Lebenspunkte<br/>
+    {{lifes}} Lebenspunkte, {{handSize}} Handkarten, {{librarySize}} Karten in der Bibliothek<br/>
     <mrn-card-collection [collection]="this.table" name="Ausgelegt"></mrn-card-collection>
     <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>
 </fieldset>

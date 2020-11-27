@@ -30,6 +30,14 @@ export class OtherPlayerComponent implements OnInit {
     return this.me.lifes;
   }
 
+  get handSize(): number {
+    return this.me.handSize;
+  }
+
+  get librarySize(): number {
+    return this.me.librarySize;
+  }
+
   get table(): CardBag {
     return this.me.table;
   }
