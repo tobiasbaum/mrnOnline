@@ -8,6 +8,7 @@ import { SelfPlayerComponent } from './self-player/self-player.component';
 import { CardComponent } from './card/card.component';
 import { OtherPlayerComponent } from './other-player/other-player.component';
 import { CardCollectionComponent } from './card-collection/card-collection.component';
+import { CardDetailsComponent } from './card-details/card-details.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { CardCollectionComponent } from './card-collection/card-collection.compo
     SelfPlayerComponent,
     CardComponent,
     OtherPlayerComponent,
-    CardCollectionComponent
+    CardCollectionComponent,
+    CardDetailsComponent
   ],
   imports: [
     BrowserModule,
