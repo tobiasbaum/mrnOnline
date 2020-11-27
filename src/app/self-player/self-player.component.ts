@@ -1,6 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { CardBag, CardStash, GameField } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
+import { ModalCardCollectionComponent } from '../modal-card-collection/modal-card-collection.component';
 
 @Component({
   selector: 'mrn-self-player',
@@ -8,6 +9,9 @@ import { GameFieldStoreService } from '../game-field-store.service';
   styleUrls: ['./self-player.component.scss']
 })
 export class SelfPlayerComponent implements OnInit {
+
+  @ViewChild(ModalCardCollectionComponent)
+  private mcc!: ModalCardCollectionComponent;
 
   constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) {
     field.subscribe((f: GameField) => f.myself.subscribeForUpdate(() => cdr.markForCheck()));
@@ -84,6 +88,15 @@ export class SelfPlayerComponent implements OnInit {
 
   isCurrentPlayer(): boolean {
     return this.field.gameField.currentPlayerName === this.field.gameField.myself.name;
+  }
+
+  openLibrary() {
+    this.gameField.myself.sendNotification('öffnet die Bibliothek');
+    let subscr = this.mcc.closed.subscribe(() => {
+      this.gameField.myself.sendNotification('schließt die Bibliothek')
+      subscr.unsubscribe();
+    });
+    this.mcc.show(this.gameField.myself.library, 'Bibliothek', 'DR,PL,PT,GR');
   }
 
 }

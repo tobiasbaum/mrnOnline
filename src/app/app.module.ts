@@ -9,6 +9,7 @@ import { CardComponent } from './card/card.component';
 import { OtherPlayerComponent } from './other-player/other-player.component';
 import { CardCollectionComponent } from './card-collection/card-collection.component';
 import { CardDetailsComponent } from './card-details/card-details.component';
+import { ModalCardCollectionComponent } from './modal-card-collection/modal-card-collection.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { CardDetailsComponent } from './card-details/card-details.component';
     CardComponent,
     OtherPlayerComponent,
     CardCollectionComponent,
-    CardDetailsComponent
+    CardDetailsComponent,
+    ModalCardCollectionComponent
   ],
   imports: [
     BrowserModule,

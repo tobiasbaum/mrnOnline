@@ -1,0 +1,4 @@
+<div *ngIf="this.isShown" class="glass-pane">
+    <button (click)="this.hide()">Schließen</button>
+    <mrn-card-collection [name]="this.name" [collection]="this.collection" [act]="this.act"></mrn-card-collection>
+</div>

@@ -250,8 +250,14 @@ class CardType {
       });
     }
   
-    drawCard() {
-      let c = this.library.draw();
+    drawCard(cardId?: number | undefined) {
+      let c;
+      if (cardId) {
+        let coll = this.getContainingCollection(cardId);
+        c = this.removeFromCollection(coll, cardId);  
+      } else {
+        c = this.library.draw();
+      }
       this.db.put('librarySizes', this.id, this.library.size);
       if (!c) {
         this.sendNotification('kann nicht ziehen');
