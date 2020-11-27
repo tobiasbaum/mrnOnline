@@ -18,12 +18,18 @@ class CardType {
   }
   
   var cardCnt = 0;
+
+  enum CardState {
+    Normal,
+    Blocker,
+    Tapped
+  }
   
   class Card {
 
     public type: CardType;
     public id: number;
-    public tapped: boolean;
+    public state: CardState = CardState.Normal;
   
     constructor(type: CardType, id?: number, tapped?: boolean) {
       this.type = type;
@@ -33,18 +39,36 @@ class CardType {
         this.id = id;
       }
       if (typeof tapped === 'undefined') {
-        this.tapped = false;
+        this.state = CardState.Normal;
       } else {
-        this.tapped = tapped;
+        this.state = tapped ? CardState.Tapped : CardState.Normal;
       }
+    }
+
+    get tapped(): boolean {
+      return this.state === CardState.Tapped;
+    }
+  
+    get normal(): boolean {
+      return this.state === CardState.Normal;
+    }
+  
+    get markedAsBlocker(): boolean {
+      return this.state === CardState.Blocker;
     }
   
     tap() {
-      this.tapped = true;
+      this.state = CardState.Tapped;
+    }
+  
+    markAsBlocker() {
+      if (this.state === CardState.Normal) {
+        this.state = CardState.Blocker;
+      }
     }
   
     untap() {
-      this.tapped = false;
+      this.state = CardState.Normal;
     }
   
     get name() {
@@ -217,7 +241,7 @@ class CardType {
 
     untapAll() {
       this.table.cards.forEach(c => {
-        if (c.tapped) {
+        if (!c.normal) {
           this.untap(c.id);
         }
       });
@@ -327,6 +351,17 @@ class CardType {
       card.tap();
       this.db.put('tables', this.id, this.table.toDto());
       this.sendNotification('tappt ' + card.name);
+      this.subject.next();
+    }
+  
+    markAsBlocker(cardId: number) {
+      let card = this.table.getById(cardId);
+      if (!card) {
+        return;
+      }
+      card.markAsBlocker();
+      this.db.put('tables', this.id, this.table.toDto());
+      this.sendNotification('markiert ' + card.name + ' als Blocker');
       this.subject.next();
     }
   

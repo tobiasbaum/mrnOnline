@@ -1,8 +1,9 @@
 <div class="dropdown">
-    <img class="card" [class.tapped]="card.tapped" (mouseover)="this.hover()" src="{{card.img}}" title="{{card.name}}" />
+    <img class="card" [class.tapped]="card.tapped" [class.blocker]="card.markedAsBlocker" (mouseover)="this.hover()" src="{{card.img}}" title="{{card.name}}" />
     <div class="dropdown-content">
       <a *ngIf="act.includes('TA') && !card.tapped" (click)="gameField.tap(card.id)">tappen</a>
-      <a *ngIf="act.includes('UT') && card.tapped" (click)="gameField.untap(card.id)">enttappen</a>
+      <a *ngIf="act.includes('BL') && card.normal" (click)="gameField.myself.markAsBlocker(card.id)">als Blocker markieren</a>
+      <a *ngIf="act.includes('UT') && !card.normal" (click)="gameField.untap(card.id)">enttappen</a>
       <a *ngIf="act.includes('PL')" (click)="gameField.putIntoPlay(card.id)">ins Spiel bringen</a>
       <a *ngIf="act.includes('PT')" (click)="gameField.putIntoPlayTapped(card.id)">getappt ins Spiel bringen</a>
       <a *ngIf="act.includes('GR')" (click)="gameField.putToGraveyard(card.id)">auf Friedhof legen</a>
