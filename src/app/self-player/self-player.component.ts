@@ -99,4 +99,7 @@ export class SelfPlayerComponent implements OnInit {
     this.mcc.show(this.gameField.myself.library, 'Bibliothek', 'DR,PL,PT,GR');
   }
 
+  shuffleLibrary() {
+    this.gameField.myself.shuffleLibrary();
+  }
 }

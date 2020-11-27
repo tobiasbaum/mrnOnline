@@ -268,6 +268,11 @@ class CardType {
       this.subject.next();
     }
 
+    shuffleLibrary() {
+      this.sendNotification('mischt die Bibliothek');
+      this.library.shuffle();
+    }
+
     private addToHand(c: Card) {
       this.hand.add(c);
       this.db.put('handSizes', this.id, this.hand.size);

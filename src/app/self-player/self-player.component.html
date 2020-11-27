@@ -3,7 +3,11 @@
     <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX'"></mrn-card-collection>
     <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA'"></mrn-card-collection>
     <button (click)="this.untapAll()">Alles enttappen</button>
-    <div>Bibliothek: {{this.librarySize()}} Karten. <button (click)="this.drawCard()">Karte ziehen</button> <button (click)="this.openLibrary()">Bibliothek öffnen</button></div>
+    <div>Bibliothek: {{this.librarySize()}} Karten. 
+        <button (click)="this.drawCard()">Karte ziehen</button>
+        <button (click)="this.openLibrary()">Bibliothek öffnen</button>
+        <button (click)="this.shuffleLibrary()">Bibliothek mischen</button>
+    </div>
     <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA,EX'" [collapsed]="true"></mrn-card-collection>
     <mrn-card-collection *ngIf="this.exile.size > 0" [collection]="this.exile" name="Aus dem Spiel" [act]="'GR'" [collapsed]="true"></mrn-card-collection>
     <div>Lebenspunkte: {{this.lifes}}
