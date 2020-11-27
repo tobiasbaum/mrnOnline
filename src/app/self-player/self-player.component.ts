@@ -48,6 +48,10 @@ export class SelfPlayerComponent implements OnInit {
     return this.field.gameField.myself.graveyard;
   }
 
+  untapAll() {
+    this.field.gameField.myself.untapAll();
+  }
+
   drawCard() {
     this.field.gameField.drawCard();
   }

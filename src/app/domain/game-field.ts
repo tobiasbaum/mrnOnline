@@ -214,6 +214,14 @@ class CardType {
             tr: tr
         }
     }
+
+    untapAll() {
+      this.table.cards.forEach(c => {
+        if (c.tapped) {
+          this.untap(c.id);
+        }
+      });
+    }
   
     drawCard() {
       let c = this.library.draw();
