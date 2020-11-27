@@ -206,6 +206,7 @@ class CardType {
       public hand: CardBag;
       public table: CardBag;
       public graveyard: CardStash;
+      public exile: CardBag;
       public lifes: number;
       public color: string;
       public db: DistributedDatabaseSystem;
@@ -222,6 +223,8 @@ class CardType {
       this.table = new CardBag([]);
       this.graveyard = new CardStash([]);
       this.db.put('graveyards', this.id, this.graveyard.toDto());
+      this.exile = new CardBag([]);
+      this.db.put('exiles', this.id, this.exile.toDto());
       this.lifes = 20;
       this.db.put('lifes', this.id, this.lifes);
       this.color = 'hsl(' + (Math.floor(Math.random() * 72) * 5) + ',90%,40%)';
@@ -285,6 +288,16 @@ class CardType {
       this.subject.next();
     }
   
+    putToExile(cardId: number) {
+      let coll = this.getContainingCollection(cardId);
+      let card = this.removeFromCollection(coll, cardId);
+      card.untap();
+      this.exile.add(card);
+      this.db.put('exiles', this.id, this.exile.toDto());
+      this.sendNotification('nimmt ' + card.name + ' ganz aus dem Spiel');
+      this.subject.next();
+    }
+  
     putIntoPlay(cardId: number) {
       let coll = this.getContainingCollection(cardId);
       let card = this.removeFromCollection(coll, cardId);
@@ -339,6 +352,9 @@ class CardType {
       }
       if (this.library.contains(cardId)) {
         return {obj: this.library, name: 'librarySizes', countOnly: true};
+      }
+      if (this.exile.contains(cardId)) {
+        return {obj: this.exile, name: 'exiles', countOnly: false};
       }
       return null;
     }

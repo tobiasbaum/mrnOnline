@@ -7,6 +7,7 @@
       <a *ngIf="act.includes('PL')" (click)="gameField.putIntoPlay(card.id)">ins Spiel bringen</a>
       <a *ngIf="act.includes('PT')" (click)="gameField.putIntoPlayTapped(card.id)">getappt ins Spiel bringen</a>
       <a *ngIf="act.includes('GR')" (click)="gameField.putToGraveyard(card.id)">auf Friedhof legen</a>
+      <a *ngIf="act.includes('EX')" (click)="gameField.myself.putToExile(card.id)">ganz aus dem Spiel nehmen</a>
       <a *ngIf="act.includes('HA')" (click)="gameField.myself.putToHand(card.id)">zurück auf die Hand nehmen</a>
     </div>
 </div>

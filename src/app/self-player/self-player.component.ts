@@ -48,6 +48,10 @@ export class SelfPlayerComponent implements OnInit {
     return this.field.gameField.myself.graveyard;
   }
 
+  get exile(): CardBag {
+    return this.field.gameField.myself.exile;
+  }
+
   untapAll() {
     this.field.gameField.myself.untapAll();
   }
