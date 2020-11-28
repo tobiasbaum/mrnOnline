@@ -1,7 +1,7 @@
 <fieldset>
 <legend [class.turn]="isCurrentPlayer()"><b>{{name}}</b> (ID: {{id}})</legend>
     <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX'"></mrn-card-collection>
-    <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA'"></mrn-card-collection>
+    <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO'"></mrn-card-collection>
     <button (click)="this.untapAll()">Alles enttappen</button>
     <div>Bibliothek: {{this.librarySize()}} Karten. 
         <button (click)="this.drawCard()">Karte ziehen</button>

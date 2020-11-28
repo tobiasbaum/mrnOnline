@@ -26,10 +26,10 @@ class CardType {
   }
   
   class Card {
-
     public type: CardType;
     public id: number;
     public state: CardState = CardState.Normal;
+    private mods: Card[] = [];
   
     constructor(type: CardType, id?: number, tapped?: boolean) {
       this.type = type;
@@ -70,13 +70,33 @@ class CardType {
     untap() {
       this.state = CardState.Normal;
     }
+
+    modifyWith(c: Card) {
+      this.mods.push(c);
+    }
   
+    clearModifiers() {
+      this.mods = [];
+    }
+
     get name() {
       return this.type.name;
     }
 
     get img() {
       return this.type.img;
+    }
+
+    get isModified(): boolean {
+      return this.mods.length > 0;
+    }
+
+    get reversedModifiers(): Card[] {
+      return this.mods.slice().reverse();
+    }
+
+    get modifiers(): Card[] {
+      return this.mods;
     }
   
     toDto() {
@@ -292,11 +312,15 @@ class CardType {
     putToGraveyard(cardId: number) {
       let coll = this.getContainingCollection(cardId);
       let card = this.removeFromCollection(coll, cardId);
+      this.addToGraveyard(card);
+      this.subject.next();
+    }
+
+    private addToGraveyard(card: Card) {
       card.untap();
       this.graveyard.add(card);
       this.db.put('graveyards', this.id, this.graveyard.toDto());
       this.sendNotification('legt ' + card.name + ' auf Friedhof');
-      this.subject.next();
     }
   
     putToExile(cardId: number) {
@@ -335,6 +359,22 @@ class CardType {
       this.subject.next();
     }
   
+    modifyOtherCard(modifierCardId: number, toModifyCardId: number) {
+      let toModify = this.table.getById(toModifyCardId);
+      if (!toModify) {
+        return;
+      }
+
+      let collData = this.getContainingCollection(modifierCardId);
+      let card = this.removeFromCollection(collData, modifierCardId);
+      card.untap();
+
+      toModify.modifyWith(card);
+      this.db.put('tables', this.id, this.table.toDto());
+      this.sendNotification('spielt ' + card.name + ' auf ' + toModify.name);
+      this.subject.next();
+    }
+
     private removeFromCollection(collData: any, cardId: number) {
       let card = collData.obj.remove(cardId);
       if (collData.countOnly) {
@@ -342,7 +382,13 @@ class CardType {
       } else {
         this.db.put(collData.name, this.id, collData.obj.toDto());
       }
+      this.dropModifiers(card);
       return card;
+    }
+
+    private dropModifiers(c: Card) {
+      c.modifiers.forEach(m => this.addToGraveyard(m));
+      c.clearModifiers();
     }
   
     addToTable(card: Card) {

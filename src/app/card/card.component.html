@@ -1,14 +1,18 @@
 <div class="dropdown">
-    <img class="card" [class.tapped]="card.tapped" [class.blocker]="card.markedAsBlocker" (mouseover)="this.hover()" src="{{card.img}}" title="{{card.name}}" />
-    <div class="dropdown-content">
-      <a *ngIf="act.includes('TA') && !card.tapped" (click)="gameField.myself.tap(card.id)">tappen</a>
-      <a *ngIf="act.includes('BL') && card.normal" (click)="gameField.myself.markAsBlocker(card.id)">als Blocker markieren</a>
-      <a *ngIf="act.includes('UT') && !card.normal" (click)="gameField.myself.untap(card.id)">enttappen</a>
-      <a *ngIf="act.includes('PL')" (click)="gameField.myself.putIntoPlay(card.id)">ins Spiel bringen</a>
-      <a *ngIf="act.includes('PT')" (click)="gameField.myself.putIntoPlayTapped(card.id)">getappt ins Spiel bringen</a>
-      <a *ngIf="act.includes('GR')" (click)="gameField.myself.putToGraveyard(card.id)">auf Friedhof legen</a>
-      <a *ngIf="act.includes('EX')" (click)="gameField.myself.putToExile(card.id)">ganz aus dem Spiel nehmen</a>
-      <a *ngIf="act.includes('DR')" (click)="gameField.myself.drawCard(card.id)">ziehen</a>
-      <a *ngIf="act.includes('HA')" (click)="gameField.myself.putToHand(card.id)">zurück auf die Hand nehmen</a>
-    </div>
+  <div [class.tapped]="card.tapped" [class.blocker]="card.markedAsBlocker" class="cardStack" >
+    <img *ngFor="let m of card.reversedModifiers" class="card" (mouseover)="this.hover(m)" src="{{m.img}}" title="{{m.name}}" />
+    <img class="card" (mouseover)="this.hover(card)" src="{{card.img}}" title="{{card.name}}" />
+  </div>
+  <div class="dropdown-content">
+    <a *ngIf="act.includes('TA') && !card.tapped" (click)="gameField.myself.tap(card.id)">tappen</a>
+    <a *ngIf="act.includes('BL') && card.normal" (click)="gameField.myself.markAsBlocker(card.id)">als Blocker markieren</a>
+    <a *ngIf="act.includes('UT') && !card.normal" (click)="gameField.myself.untap(card.id)">enttappen</a>
+    <a *ngIf="act.includes('PL')" (click)="gameField.myself.putIntoPlay(card.id)">ins Spiel bringen</a>
+    <a *ngIf="act.includes('PT')" (click)="gameField.myself.putIntoPlayTapped(card.id)">getappt ins Spiel bringen</a>
+    <a *ngIf="act.includes('MO') && !card.isModified" (click)="modifyOtherCard(card.id)">auf andere Karte legen</a>
+    <a *ngIf="act.includes('GR')" (click)="gameField.myself.putToGraveyard(card.id)">auf Friedhof legen</a>
+    <a *ngIf="act.includes('EX')" (click)="gameField.myself.putToExile(card.id)">ganz aus dem Spiel nehmen</a>
+    <a *ngIf="act.includes('DR')" (click)="gameField.myself.drawCard(card.id)">ziehen</a>
+    <a *ngIf="act.includes('HA')" (click)="gameField.myself.putToHand(card.id)">zurück auf die Hand nehmen</a>
+  </div>
 </div>

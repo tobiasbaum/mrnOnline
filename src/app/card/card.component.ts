@@ -27,8 +27,13 @@ export class CardComponent implements OnInit {
     return this.field.gameField;
   }
 
-  hover() {
-    this.hc.setCard(this.card);
+  hover(c: Card) {
+    this.hc.setCard(c);
+  }
+
+  modifyOtherCard(cardId: number) {
+    let otherId = this.gameField.myself.table.cards[0].id;
+    this.gameField.myself.modifyOtherCard(cardId, otherId);
   }
 
 }
