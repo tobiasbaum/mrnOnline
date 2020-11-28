@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Card } from './domain/game-field';
 
 @Injectable({
@@ -13,8 +14,10 @@ export class HoveredCardService {
     this.store.next(c);
   }
 
-  public subscribe(handler: (c:Card) => void): void {
-    this.store.subscribe(handler);
+  public subscribe(handler: (c:Card) => void, destroy: Subject<any>): void {
+    this.store
+      .pipe(takeUntil(destroy))
+      .subscribe(handler);
   }
 
   constructor() { }

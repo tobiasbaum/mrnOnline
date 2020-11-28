@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, NextObserver } from 'rxjs';
+import { BehaviorSubject, NextObserver, Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { GameField } from './domain/game-field';
 
 @Injectable({
@@ -17,12 +18,14 @@ export class GameFieldStoreService {
     this.store.next(f);
   }
 
-  public subscribe(handler: (f:GameField) => void): void {
-    this.store.subscribe(x => {
-      if (x) {
-        handler(x);
-      }
-    });
+  public subscribe(handler: (f:GameField) => void, destroy: Subject<any>): void {
+    this.store
+      .pipe(takeUntil(destroy))
+      .subscribe(x => {
+        if (x) {
+          handler(x);
+        }
+      });
   }
 
   constructor() { }

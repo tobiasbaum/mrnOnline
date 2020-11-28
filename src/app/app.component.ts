@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
+import { Subject } from 'rxjs';
 import { GameField, Card, CardType, OtherPlayer } from './domain/game-field';
 import { GameFieldStoreService } from './game-field-store.service';
 
@@ -14,8 +15,16 @@ export class AppComponent {
 
   public state: string = 'initial';
 
+  private destroy = new Subject();
+
   constructor(public fieldService: GameFieldStoreService, cdr: ChangeDetectorRef) {
-    fieldService.subscribe(f => f.registerPlayerChangeHandler(() => {console.log('hallo'); cdr.detectChanges()}));
+    fieldService.subscribe(
+      f => f.registerPlayerChangeHandler(() => {cdr.detectChanges()}),
+      this.destroy);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy.next();
   }
 
   createPeer(name: string) {

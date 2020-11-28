@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Subject } from 'rxjs';
 import { CardBag, CardStash, GameField } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 import { ModalCardCollectionComponent } from '../modal-card-collection/modal-card-collection.component';
@@ -13,11 +14,19 @@ export class SelfPlayerComponent implements OnInit {
   @ViewChild(ModalCardCollectionComponent)
   private mcc!: ModalCardCollectionComponent;
 
+  private destroy = new Subject();
+
   constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) {
-    field.subscribe((f: GameField) => f.myself.subscribeForUpdate(() => cdr.markForCheck()));
+    field.subscribe(
+      (f: GameField) => f.myself.subscribeForUpdate(() => cdr.markForCheck()),
+      this.destroy);
   }
 
   ngOnInit(): void {
+  }
+
+  ngOnDestroy(): void {
+    this.destroy.next();
   }
 
   get name(): string {
