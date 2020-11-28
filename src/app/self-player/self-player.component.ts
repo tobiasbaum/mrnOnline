@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angula
 import { Subject } from 'rxjs';
 import { CardBag, CardStash, GameField } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
+import { ModalCardCollectionService } from '../modal-card-collection.service';
 import { ModalCardCollectionComponent } from '../modal-card-collection/modal-card-collection.component';
 
 @Component({
@@ -11,12 +12,12 @@ import { ModalCardCollectionComponent } from '../modal-card-collection/modal-car
 })
 export class SelfPlayerComponent implements OnInit {
 
-  @ViewChild(ModalCardCollectionComponent)
-  private mcc!: ModalCardCollectionComponent;
-
   private destroy = new Subject();
 
-  constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) {
+  constructor(
+      private field: GameFieldStoreService, 
+      private cdr: ChangeDetectorRef, 
+      private mcc: ModalCardCollectionService) {
     field.subscribe(
       (f: GameField) => f.myself.subscribeForUpdate(() => cdr.markForCheck()),
       this.destroy);

@@ -1,8 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Subject } from 'rxjs';
 import { CardActionModeService } from '../card-action-mode.service';
-import { Card, GameField } from '../domain/game-field';
+import { Card, CardBag, GameField } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 import { HoveredCardService } from '../hovered-card.service';
+import { ModalCardCollectionService } from '../modal-card-collection.service';
+import { ModalCardCollectionComponent } from '../modal-card-collection/modal-card-collection.component';
 
 @Component({
   selector: 'mrn-card',
@@ -19,12 +22,23 @@ export class CardComponent implements OnInit {
 
   public large: boolean = false;
 
+  private destroy = new Subject();
+
   constructor(
     private field: GameFieldStoreService, 
     private hc: HoveredCardService,
-    private mode: CardActionModeService) { }
+    private mode: CardActionModeService,
+    private cdr: ChangeDetectorRef,
+    private mcc: ModalCardCollectionService) {
+
+    mode.subscribe(() => cdr.detectChanges(), this.destroy);
+  }
 
   ngOnInit(): void {
+  }
+
+  ngOnDestroy(): void {
+    this.destroy.next();
   }
 
   get gameField(): GameField {
@@ -48,6 +62,17 @@ export class CardComponent implements OnInit {
       this.gameField.modifyOtherCard(this.mode.savedId, targetId);
     }
     this.mode.normalMode();
+  }
+
+  openStack() {
+    let cards = new CardBag(this.card.modifiers);
+    this.mcc.show(cards, 'Kartendetails', this.intersectActions(['HA', 'GR', 'EX', 'PL']));
+  }
+
+  private intersectActions(otherActions: string[]): string {
+    return otherActions
+      .filter(s => this.act.indexOf(s) >= 0)
+      .join(',');
   }
 
 }

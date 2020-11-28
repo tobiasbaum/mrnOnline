@@ -15,9 +15,10 @@
       <a *ngIf="act.includes('EX')" (click)="gameField.myself.putToExile(card.id)">ganz aus dem Spiel nehmen</a>
       <a *ngIf="act.includes('DR')" (click)="gameField.myself.drawCard(card.id)">ziehen</a>
       <a *ngIf="act.includes('HA')" (click)="gameField.myself.putToHand(card.id)">zurück auf die Hand nehmen</a>  
+      <a *ngIf="card.isModified" (click)="openStack()">Einzelkarten auffächern</a>  
     </ng-container>
     <ng-container *ngIf="isModifyMode">
       <a (click)="modifyTargetSelected(card.id)">als Ziel auswählen</a>  
     </ng-container>
-    </div>
+  </div>
 </div>
