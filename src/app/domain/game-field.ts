@@ -86,6 +86,26 @@ class CardType {
       this.mods = [];
     }
 
+    isModifiedBy(cardId: number): boolean {
+      for (let i = 0; i < this.mods.length; i++) {
+        if (this.mods[i].id === cardId) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    removeModifier(cardId: number): Card | null {
+      for (let i = 0; i < this.mods.length; i++) {
+        if (this.mods[i].id === cardId) {
+          let card = this.mods[i];
+          this.mods.splice(i, 1);
+          return card;
+        }
+      }
+      return null;
+    }
+
     get name() {
       return this.type.name;
     }
@@ -412,13 +432,18 @@ class CardType {
     }
     
     private removeFromCollection(collData: any, cardId: number) {
-      let card = collData.obj.remove(cardId);
+      let card;
+      if (collData.nestedIn) {
+        card = collData.nestedIn.removeModifier(cardId);
+      } else {
+        card = collData.obj.remove(cardId);
+        this.dropModifiers(card);  
+      }
       if (collData.countOnly) {
         this.db.put(collData.name, this.id, collData.obj.size);
       } else {
         this.db.put(collData.name, this.id, collData.obj.toDto());
       }
-      this.dropModifiers(card);
       return card;
     }
 
@@ -448,6 +473,10 @@ class CardType {
       }
       if (this.exile.contains(cardId)) {
         return {obj: this.exile, name: 'exiles', countOnly: false};
+      }
+      let nested = this.table.cards.filter(c => c.isModifiedBy(cardId));
+      if (nested.length > 0) {
+        return {obj: this.table, name: 'tables', countOnly: false, nestedIn: nested[0]};
       }
       return null;
     }
