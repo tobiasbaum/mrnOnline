@@ -47,12 +47,11 @@ class Database {
 }
 
 export class DistributedDatabaseSystem {
-
   private peer: any;
   private ownName: string;
   private time: number;
   private otherNames: string[];
-  private others: any;
+  private others: any[];
   private callbacks: any;
   private databases: any;
 
@@ -62,7 +61,7 @@ export class DistributedDatabaseSystem {
     this.time = 0;
     this.otherNames = [];
     this.others = [];
-    this.callbacks = {add: {}, update: {}, ignore: {}};
+    this.callbacks = {add: {}, update: {}, ignore: {}, receiveCommand: {}};
     this.databases = {};
   }
 
@@ -83,14 +82,18 @@ export class DistributedDatabaseSystem {
     });
   }
 
-  dumpDatabasesTo(conn: any) {
+  private dumpDatabasesTo(conn: any) {
     for (let [name, db] of Object.entries(this.databases)) {
       (db as Database).dumpEntries(conn, name, this.ownName, this.otherNames);
     }
   }
 
-  handleData(d: any) {
+  private handleData(d: any) {
     console.log('received: ' + JSON.stringify(d));
+    if (d.cmd) {
+      this.handleCommand(d);
+      return;
+    }
     this.time = Math.max(this.time, d.t);
     this.ensureDbExists(d.db);
     let eventType = this.databases[d.db].put(d.t, d.id, d.dta);
@@ -103,13 +106,19 @@ export class DistributedDatabaseSystem {
     this.establishConnectionToUnknownNodes(d);
   }
 
-  ensureDbExists(dbName: string) {
+  private handleCommand(d: any) {
+    if (this.callbacks['receiveCommand'][d.cmd]) {
+      this.callbacks['receiveCommand'][d.cmd](d.dta);
+    }
+  }
+
+  private ensureDbExists(dbName: string) {
     if (!this.databases[dbName]) {
       this.databases[dbName] = new Database();
     }
   }
 
-  forwardToFurtherReceivers(packet: any) {
+  private forwardToFurtherReceivers(packet: any) {
     let furtherReceivers: string[] = [];
     let existingSet = new Set(packet.rcv);
     existingSet.add(this.ownName);
@@ -128,7 +137,7 @@ export class DistributedDatabaseSystem {
     });
   }
 
-  establishConnectionToUnknownNodes(packet: any) {
+  private establishConnectionToUnknownNodes(packet: any) {
     let _this = this;
     let nameSet = new Set(this.otherNames);
     nameSet.add(this.ownName);
@@ -168,6 +177,14 @@ export class DistributedDatabaseSystem {
 
   on(eventType: string, database: string, action: Function) {
     this.callbacks[eventType][database] = action;
+  }
+
+  sendCommandTo(receiverId: string, command: string, data: any) {
+    let idx = this.otherNames.indexOf(receiverId);
+    this.others[idx].send({
+      cmd: command,
+      dta: data
+    });
   }
 
 }

@@ -28,9 +28,6 @@ export class AppComponent {
   }
 
   createPeer(name: string) {
-    if (window.mrnOnline.gameField) {
-        return;
-    }
     var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
     //var peer = new Peer(undefined, {});
     peer.on('error', (err: any) => {
@@ -39,6 +36,7 @@ export class AppComponent {
     });
     peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
+        this.mapDecksAndCards(id);
         window.mrnOnline.gameField = new GameField(peer, id, name);
         this.fieldService.init(window.mrnOnline.gameField);
         this.state = 'started';
@@ -50,7 +48,6 @@ export class AppComponent {
 }
 
 start() {
-    this.mapDecksAndCards();
     let def = localStorage.getItem('mrnUserName');
     let name = prompt('Name', def !== null ? def : undefined);
     if (name) {
@@ -59,7 +56,7 @@ start() {
     }
 }
 
-mapDecksAndCards() {
+mapDecksAndCards(peerId: string) {
   let mi : MrnOnlineDuringInit = {
     cards: [],
     deck: [],
@@ -74,7 +71,7 @@ mapDecksAndCards() {
  window.mrnOnline.deck = [];
  for (let i = 0; i < d.length; i++) {
    let card = d[i];
-   window.mrnOnline.deck.push(new Card(window.mrnOnline.cards[card]));
+   window.mrnOnline.deck.push(new Card(window.mrnOnline.cards[card], peerId));
  }
 }
 

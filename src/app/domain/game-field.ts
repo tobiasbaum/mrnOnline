@@ -27,12 +27,14 @@ class CardType {
   
   class Card {
     public type: CardType;
+    public controllerId: string;
     public id: number;
     public state: CardState = CardState.Normal;
     private mods: Card[] = [];
   
-    constructor(type: CardType, id?: number, tapped?: boolean) {
+    constructor(type: CardType, controllerId: string, id?: number, tapped?: boolean) {
       this.type = type;
+      this.controllerId = controllerId;
       if (typeof id === 'undefined') {
         this.id = Math.floor(Math.random() * 10000) * 1000 + cardCnt++;
       } else {
@@ -102,6 +104,7 @@ class CardType {
     toDto() {
       return {
         id: this.id,
+        cntr: this.controllerId,
         type: this.type.toDto(),
         tapped: this.tapped
       }
@@ -114,12 +117,13 @@ class CardType {
 
   interface DtoCard {
       type: DtoCardType;
+      cntr: string;
       id: number;
       tapped: boolean;
   }
   
   function cardFromDto(dto: DtoCard) {
-    return new Card(cardTypeFromDto(dto.type), dto.id, dto.tapped);
+    return new Card(cardTypeFromDto(dto.type), dto.cntr, dto.id, dto.tapped);
   }
   
   export abstract class CardCollection implements Iterable<Card> {
@@ -248,6 +252,8 @@ class CardType {
       this.lifes = 20;
       this.db.put('lifes', this.id, this.lifes);
       this.color = 'hsl(' + (Math.floor(Math.random() * 72) * 5) + ',90%,40%)';
+
+      this.db.on('receiveCommand', 'putToGraveyard', (cardDto: DtoCard) => this.addToGraveyard(cardFromDto(cardDto)));
     }
   
     subscribeForUpdate(arg0: () => void): void {
@@ -318,9 +324,13 @@ class CardType {
 
     private addToGraveyard(card: Card) {
       card.untap();
-      this.graveyard.add(card);
-      this.db.put('graveyards', this.id, this.graveyard.toDto());
-      this.sendNotification('legt ' + card.name + ' auf Friedhof');
+      if (this.id === card.controllerId) {
+        this.graveyard.add(card);
+        this.db.put('graveyards', this.id, this.graveyard.toDto());  
+        this.sendNotification('legt ' + card.name + ' auf Friedhof');
+      } else {
+        this.db.sendCommandTo(card.controllerId, 'putToGraveyard', card.toDto());
+      }
     }
   
     putToExile(cardId: number) {
