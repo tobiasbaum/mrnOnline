@@ -44,7 +44,9 @@ export class CardComponent implements OnInit {
   }
 
   modifyTargetSelected(targetId: number) {
-    this.gameField.myself.modifyOtherCard(this.mode.savedId, targetId);
+    if (this.mode.savedId !== targetId) {
+      this.gameField.modifyOtherCard(this.mode.savedId, targetId);
+    }
     this.mode.normalMode();
   }
 

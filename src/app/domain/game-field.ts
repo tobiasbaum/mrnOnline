@@ -30,9 +30,9 @@ class CardType {
     public controllerId: string;
     public id: number;
     public state: CardState = CardState.Normal;
-    private mods: Card[] = [];
+    private mods: Card[];
   
-    constructor(type: CardType, controllerId: string, id?: number, tapped?: boolean) {
+    constructor(type: CardType, controllerId: string, id?: number, tapped?: boolean, mods?: Card[]) {
       this.type = type;
       this.controllerId = controllerId;
       if (typeof id === 'undefined') {
@@ -44,6 +44,11 @@ class CardType {
         this.state = CardState.Normal;
       } else {
         this.state = tapped ? CardState.Tapped : CardState.Normal;
+      }
+      if (typeof mods === 'undefined') {
+        this.mods = [];
+      } else {
+        this.mods = mods;
       }
     }
 
@@ -101,12 +106,13 @@ class CardType {
       return this.mods;
     }
   
-    toDto() {
+    toDto(): DtoCard {
       return {
         id: this.id,
         cntr: this.controllerId,
         type: this.type.toDto(),
-        tapped: this.tapped
+        tapped: this.tapped,
+        mods: this.mods.map(x => x.toDto())
       }
     }
   }
@@ -120,10 +126,11 @@ class CardType {
       cntr: string;
       id: number;
       tapped: boolean;
+      mods: DtoCard[];
   }
   
-  function cardFromDto(dto: DtoCard) {
-    return new Card(cardTypeFromDto(dto.type), dto.cntr, dto.id, dto.tapped);
+  function cardFromDto(dto: DtoCard): Card {
+    return new Card(cardTypeFromDto(dto.type), dto.cntr, dto.id, dto.tapped, dto.mods.map(cardFromDto));
   }
   
   export abstract class CardCollection implements Iterable<Card> {
@@ -254,6 +261,7 @@ class CardType {
       this.color = 'hsl(' + (Math.floor(Math.random() * 72) * 5) + ',90%,40%)';
 
       this.db.on('receiveCommand', 'putToGraveyard', (cardDto: DtoCard) => this.addToGraveyard(cardFromDto(cardDto)));
+      this.db.on('receiveCommand', 'modifyCard', (x: any) => this.modifyWithOthersCard(x.tgt, cardFromDto(x.card)));
     }
   
     subscribeForUpdate(arg0: () => void): void {
@@ -369,7 +377,7 @@ class CardType {
       this.subject.next();
     }
   
-    modifyOtherCard(modifierCardId: number, toModifyCardId: number) {
+    modifyOwnCard(modifierCardId: number, toModifyCardId: number) {
       let toModify = this.table.getById(toModifyCardId);
       if (!toModify) {
         return;
@@ -377,14 +385,32 @@ class CardType {
 
       let collData = this.getContainingCollection(modifierCardId);
       let card = this.removeFromCollection(collData, modifierCardId);
-      card.untap();
+      this.applyModification(toModify, card);
+    }
 
+    modifyOtherPlayersCard(modifierCardId: number, toModifyCardId: number, otherPlayerId: string) {
+      let collData = this.getContainingCollection(modifierCardId);
+      let card = this.removeFromCollection(collData, modifierCardId);
+      this.db.sendCommandTo(otherPlayerId, 'modifyCard', {tgt: toModifyCardId, card: card.toDto()});
+    }
+
+    private modifyWithOthersCard(toModifyCardId: number, card: Card) {
+      let toModify = this.table.getById(toModifyCardId);
+      if (!toModify) {
+        return;
+      }
+
+      this.applyModification(toModify, card);
+    }
+
+    private applyModification(toModify: Card, card: Card) {
+      card.untap();
       toModify.modifyWith(card);
       this.db.put('tables', this.id, this.table.toDto());
       this.sendNotification('spielt ' + card.name + ' auf ' + toModify.name);
       this.subject.next();
     }
-
+    
     private removeFromCollection(collData: any, cardId: number) {
       let card = collData.obj.remove(cardId);
       if (collData.countOnly) {
@@ -424,6 +450,10 @@ class CardType {
         return {obj: this.exile, name: 'exiles', countOnly: false};
       }
       return null;
+    }
+
+    hasCard(cardId: number) {
+      return this.getContainingCollection(cardId) !== null;
     }
   
     tap(cardId: number) {
@@ -467,8 +497,20 @@ class CardType {
   
   export class OtherPlayer {
     private subject: Subject<void> = new Subject();
+    private cachedGraveyard: CardStash = new CardStash([]);
+    private cachedTable: CardStash = new CardStash([]);;
 
     constructor(public id: string, public db: DistributedDatabaseSystem) {
+      db.on('update', 'graveyards', (playerId: string, content: DtoCard[]) => {
+        if (playerId === this.id) {
+          this.cachedGraveyard = this.map(content);
+        }
+      });
+      db.on('update', 'tables', (playerId: string, content: DtoCard[]) => {
+        if (playerId === this.id) {
+          this.cachedTable = this.map(content);
+        }
+      });
     }
   
     get name(): string {
@@ -488,19 +530,15 @@ class CardType {
     }
   
     get graveyard() {
-      return this.getCardStash('graveyards');
+      return this.cachedGraveyard;
     }
   
     get table() {
-      return this.getCardStash('tables');
+      return this.cachedTable;
     }
   
-    getCardStash(stashId: string): CardStash {
-      let g: DtoCard[] = this.db.get(stashId, this.id);
-      if (!g) {
-        g = [];
-      }
-      return new CardStash(g.map(x => cardFromDto(x)));
+    private map(data: DtoCard[]): CardStash {
+      return new CardStash(data.map(x => cardFromDto(x)));
     }
 
     notifyUpdate() {
@@ -510,6 +548,10 @@ class CardType {
   
     subscribeForUpdate(arg0: () => void) {
       this.subject.subscribe(arg0);
+    }
+
+    hasCard(cardId: number): boolean {
+      return this.table.contains(cardId);
     }
 
   }
@@ -605,7 +647,18 @@ class CardType {
         this.myself.changeLifeCount(-1);
        }
        
+    modifyOtherCard(modifierCardId: number, targetId: number) {
+      if (this.myself.hasCard(targetId)) {
+        this.myself.modifyOwnCard(modifierCardId, targetId);
+      } else {
+        this.others.forEach(p => {
+          if (p.hasCard(targetId)) {
+            this.myself.modifyOtherPlayersCard(modifierCardId, targetId, p.id);
+          }
+        });
+      }
     }
+  }
 
 export { GameField, Card, CardType };
 declare global {
