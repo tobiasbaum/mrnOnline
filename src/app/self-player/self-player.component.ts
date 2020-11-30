@@ -114,8 +114,10 @@ export class SelfPlayerComponent implements OnInit {
   }
 
   createToken() {
-    let name = prompt('Name');
+    let lastName = localStorage.getItem('lastTokenName');
+    let name = prompt('Name', lastName ? lastName : undefined);
     if (name) {
+      localStorage.setItem('lastTokenName', name);
       this.gameField.myself.createToken(name);
     }
   }
