@@ -596,7 +596,7 @@ class CardType {
     public others: OtherPlayer[];
     public myself: SelfPlayer;
   
-    constructor(peer: any, ownId: string, ownName: string) {
+    constructor(peer: any, ownId: string, ownName: string, deck: Card[]) {
       this.others = [];
       this.db = new DistributedDatabaseSystem(peer, ownId);
       this.db.on('add', 'playerNames', (id: string, name: any) => this.updatePlayer(id));
@@ -605,7 +605,7 @@ class CardType {
       this.db.on('update', 'graveyards', (id: string, cards: any) => this.updatePlayer(id));
       this.db.on('update', 'tables', (id: string, cards: any) => this.updatePlayer(id));
   
-      this.myself = new SelfPlayer(ownId, ownName, window.mrnOnline.deck, this.db);
+      this.myself = new SelfPlayer(ownId, ownName, deck, this.db);
       this.db.put('playerNames', ownId, ownName);
     }
 

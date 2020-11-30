@@ -1,5 +1,17 @@
 <ng-container *ngIf="state === 'initial'">
-    <button (click)="this.start()">Start ...</button>
+    <form>
+        <table>
+            <tr>
+                <td>Spieler</td>
+                <td><input type="text" name="playerName" [(ngModel)]="this.formData.playerName" /></td>
+            </tr>
+            <tr>
+                <td>Deck-URL</td>
+                <td><input type="text" name="deckUrl" [(ngModel)]="this.formData.deckUrl" /></td>
+            </tr>
+        </table>
+        <button (click)="this.start()">Start ...</button>
+    </form>
 </ng-container>
 <ng-container *ngIf="state === 'started'">
     <button (click)="this.waitForOthers()">Neues Spiel starten</button>

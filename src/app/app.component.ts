@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { Subject } from 'rxjs';
 import { GameField, Card, CardType, OtherPlayer } from './domain/game-field';
@@ -15,9 +16,14 @@ export class AppComponent {
 
   public state: string = 'initial';
 
+  public formData = {
+    playerName: localStorage.getItem('mrnUserName'),
+    deckUrl: './assets/stubData.json'
+  } 
+
   private destroy = new Subject();
 
-  constructor(public fieldService: GameFieldStoreService, cdr: ChangeDetectorRef) {
+  constructor(public fieldService: GameFieldStoreService, private http: HttpClient, cdr: ChangeDetectorRef) {
     fieldService.subscribe(
       f => f.registerPlayerChangeHandler(() => {cdr.detectChanges()}),
       this.destroy);
@@ -36,49 +42,50 @@ export class AppComponent {
     });
     peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
-        this.mapDecksAndCards(id);
-        window.mrnOnline.gameField = new GameField(peer, id, name);
-        this.fieldService.init(window.mrnOnline.gameField);
-        this.state = 'started';
+        this.loadDeckAndStart(peer, id);
     });
     peer.on('connection', (conn: any) => {
         //alert('Got connection ' + conn);
-        window.mrnOnline.gameField.addOtherPlayer(conn);
+        this.fieldService.gameField.addOtherPlayer(conn);
     });
 }
 
-start() {
-    let def = localStorage.getItem('mrnUserName');
-    let name = prompt('Name', def !== null ? def : undefined);
-    if (name) {
-      localStorage.setItem('mrnUserName', name);
-      this.createPeer(name);
-    }
+private loadDeckAndStart(peer: any, playerId: string) {
+  this.http.get(this.formData.deckUrl).subscribe((data: any) => {
+    let deck: Card[] = this.mapDecksAndCards(data, playerId);
+    console.log('loaded deck with ' + deck.length + ' cards');
+    this.fieldService.init(new GameField(peer, playerId, name, deck));
+    this.state = 'started';
+  });
 }
 
-mapDecksAndCards(peerId: string) {
-  let mi : MrnOnlineDuringInit = {
-    cards: [],
-    deck: [],
-    gameField: undefined
-  };
-  window.mrnOnline = mi as MrnOnline;
- for (let i = 0; i < window.mrnData.cards.length; i++) {
-   let card = window.mrnData.cards[i];
-   window.mrnOnline.cards[card.name] = new CardType(card.name, card.img);
- }
- let d = window.mrnData.decks[0].cards;
- window.mrnOnline.deck = [];
- for (let i = 0; i < d.length; i++) {
-   let card = d[i];
-   window.mrnOnline.deck.push(new Card(window.mrnOnline.cards[card], peerId));
- }
+start() {
+  let name = this.formData.playerName;
+  if (name) {
+    localStorage.setItem('mrnUserName', name);
+    this.createPeer(name);
+  }
+}
+
+mapDecksAndCards(data: any, peerId: string): Card[] {
+  let cards: any = {};
+  for (let i = 0; i < data.cards.length; i++) {
+    let card = data.cards[i];
+    cards[card.name] = new CardType(card.name, card.img);
+  }
+  let d: string[] = data.deck;
+  let deck = [];
+  for (let i = 0; i < d.length; i++) {
+    let card = d[i];
+    deck.push(new Card(cards[card], peerId));
+  }
+  return deck;
 }
 
 join() {
     var other = prompt('ID des Mitspielers');
     if (other) {
-      window.mrnOnline.gameField.connectToOtherPlayer(other);
+      this.fieldService.gameField.connectToOtherPlayer(other);
       this.state = 'joined';
     }
 }
@@ -100,28 +107,4 @@ get otherPlayers(): OtherPlayer[] {
   return this.fieldService.gameField.others;
 }
 
-// window.mrnOnline = {};
-// window.mrnOnline.cards = {
-//  respite: new CardType('Respite'),
-//  fog: new CardType('Fog'),
-//  verdantForce: new CardType('Verdant Force'),
-//  terror: new CardType('Terror'),
-//  forest: new CardType('Forest')
-// };
-
-// window.mrnOnline.deck = [
-//  new Card(window.mrnOnline.cards['respite']),
-//  new Card(window.mrnOnline.cards['respite']),
-//  new Card(window.mrnOnline.cards['respite']),
-//  new Card(window.mrnOnline.cards['respite']),
-//  new Card(window.mrnOnline.cards['fog']),
-//  new Card(window.mrnOnline.cards['fog']),
-//  new Card(window.mrnOnline.cards['fog']),
-//  new Card(window.mrnOnline.cards['fog']),
-//  new Card(window.mrnOnline.cards['verdantForce']),
-//  new Card(window.mrnOnline.cards['forest']),
-//  new Card(window.mrnOnline.cards['forest']),
-//  new Card(window.mrnOnline.cards['forest']),
-//  new Card(window.mrnOnline.cards['forest'])
-// ];
 }
