@@ -54,7 +54,7 @@ private loadDeckAndStart(peer: any, playerId: string) {
   this.http.get(this.formData.deckUrl).subscribe((data: any) => {
     let deck: Card[] = this.mapDecksAndCards(data, playerId);
     console.log('loaded deck with ' + deck.length + ' cards');
-    this.fieldService.init(new GameField(peer, playerId, name, deck));
+    this.fieldService.init(new GameField(peer, playerId, this.formData.playerName as string, deck));
     this.state = 'started';
   });
 }
