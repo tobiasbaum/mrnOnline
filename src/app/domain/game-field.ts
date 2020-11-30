@@ -519,7 +519,7 @@ class CardType {
     }
   
     sendNotification(msg: string) {
-      this.db.add('messages', this.makeColored(new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}) + ' ' + this.name + ' ' + msg, ''));
+      this.db.add('messages', this.makeColored(curTime() + ' ' + this.name + ' ' + msg, ''));
     }
   
   }
@@ -653,7 +653,7 @@ class CardType {
 
     setCurrentPlayer(name: string) {
       this.db.put('currentPlayer', 'name', name);
-      this.sendMessageRaw({color: 'black', tc: name + ' ist am Zug', tr: ''});
+      this.sendMessageRaw({color: 'black', tc: curTime() + ' ' + name + ' ist am Zug', tr: ''});
     }
   
     updatePlayer(id: string) {
@@ -661,7 +661,7 @@ class CardType {
     }
   
     sendMessage(msg: string) {
-      this.sendMessageRaw(this.myself.makeColored(new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}) + ' ' + this.myself.name, msg));
+      this.sendMessageRaw(this.myself.makeColored(curTime() + ' ' + this.myself.name, msg));
     }
   
     sendMessageRaw(msg: MsgData) {
@@ -689,17 +689,8 @@ class CardType {
     }
   }
 
-export { GameField, Card, CardType };
-declare global {
-    interface MrnOnline {
-        deck: Card[];
-        cards: CardType[];
-        gameField: GameField;
-    }
-    interface MrnOnlineDuringInit {
-        deck: Card[];
-        cards: CardType[];
-        gameField: GameField | undefined;
-    }
-    interface Window { mrnOnline: MrnOnline; mrnData: any}
+function curTime(): string {
+  return new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
 }
+
+export { GameField, Card, CardType };

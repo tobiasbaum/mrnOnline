@@ -43,7 +43,7 @@ export class ChatBoxComponent implements OnInit {
 sendMessage(): void {
       var message = prompt('Nachricht');
       if (message) {
-        (window.mrnOnline.gameField as GameField).sendMessage(message);
+        this.field.gameField.sendMessage(message);
       }
   }
 
