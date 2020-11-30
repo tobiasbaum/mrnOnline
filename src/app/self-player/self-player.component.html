@@ -7,6 +7,7 @@
         <button (click)="this.drawCard()">Karte ziehen</button>
         <button (click)="this.openLibrary()">Bibliothek öffnen</button>
         <button (click)="this.shuffleLibrary()">Bibliothek mischen</button>
+        <button (click)="this.createToken()">Token erstellen</button>
     </div>
     <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA,EX'" [collapsed]="true"></mrn-card-collection>
     <mrn-card-collection *ngIf="this.exile.size > 0" [collection]="this.exile" name="Aus dem Spiel" [act]="'GR'" [collapsed]="true"></mrn-card-collection>

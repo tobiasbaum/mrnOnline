@@ -1,8 +1,27 @@
+import { SafeUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { DistributedDatabaseSystem } from './distributed-database';
 
 class CardType {
-    constructor(public name: string, public img: string) {
+
+    public readonly img: string;
+    public readonly token: boolean;
+
+    constructor(public name: string, img: string | undefined, token?: boolean) {
+      if (token) {
+        this.token = true;
+      } else {
+        this.token = false;
+      }
+      if (img) {
+        this.img = img;
+      } else {
+        this.img = 'data:image/svg+xml;base64,' + btoa(this.createSvg(name.replace(/[^a-zA-Z0-9 ]/, '')));
+      }
+    }
+
+    private createSvg(title: string): string {
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 334"><rect x="5" y="5" width="230" height="324" fill="gray" /><text x="20" y="35">' + title + '</text></svg>';
     }
   
     toDto() {
@@ -351,6 +370,10 @@ class CardType {
     }
 
     private addToGraveyard(card: Card) {
+      if (card.type.token) {
+        this.sendNotification('Token ' + card.name + ' verschwindet');
+        return;
+      }
       card.untap();
       if (this.id === card.controllerId) {
         this.graveyard.add(card);
@@ -364,6 +387,10 @@ class CardType {
     putToExile(cardId: number) {
       let coll = this.getContainingCollection(cardId);
       let card = this.removeFromCollection(coll, cardId);
+      if (card.type.token) {
+        this.sendNotification('Token ' + card.name + ' verschwindet');
+        return;
+      }
       card.untap();
       this.exile.add(card);
       this.db.put('exiles', this.id, this.exile.toDto());
@@ -522,6 +549,11 @@ class CardType {
       this.db.add('messages', this.makeColored(curTime() + ' ' + this.name + ' ' + msg, ''));
     }
   
+    createToken(name: string) {
+      let type = new CardType(name, undefined, true);
+      let card = new Card(type, this.id);
+      this.addToTable(card);
+    }
   }
   
   export class OtherPlayer {

@@ -112,4 +112,11 @@ export class SelfPlayerComponent implements OnInit {
   shuffleLibrary() {
     this.gameField.myself.shuffleLibrary();
   }
+
+  createToken() {
+    let name = prompt('Name');
+    if (name) {
+      this.gameField.myself.createToken(name);
+    }
+  }
 }

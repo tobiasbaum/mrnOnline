@@ -5,7 +5,6 @@ import { Card, CardBag, GameField } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 import { HoveredCardService } from '../hovered-card.service';
 import { ModalCardCollectionService } from '../modal-card-collection.service';
-import { ModalCardCollectionComponent } from '../modal-card-collection/modal-card-collection.component';
 
 @Component({
   selector: 'mrn-card',

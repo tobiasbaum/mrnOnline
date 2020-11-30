@@ -12,6 +12,7 @@ import { CardCollectionComponent } from './card-collection/card-collection.compo
 import { CardDetailsComponent } from './card-details/card-details.component';
 import { ModalCardCollectionComponent } from './modal-card-collection/modal-card-collection.component';
 import { FormsModule } from '@angular/forms';
+import { IsSafeUrlPipe } from './is-safe-url.pipe';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { FormsModule } from '@angular/forms';
     OtherPlayerComponent,
     CardCollectionComponent,
     CardDetailsComponent,
-    ModalCardCollectionComponent
+    ModalCardCollectionComponent,
+    IsSafeUrlPipe
   ],
   imports: [
     BrowserModule,
