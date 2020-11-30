@@ -1,4 +1,4 @@
-<fieldset>
+<fieldset id="{{id}}">
     <legend [class.turn]="isCurrentPlayer()">{{name}} ({{id}})</legend>
     {{lifes}} Lebenspunkte, {{handSize}} Handkarten, {{librarySize}} Karten in der Bibliothek<br/>
     <mrn-card-collection [collection]="this.table" name="Ausgelegt"></mrn-card-collection>

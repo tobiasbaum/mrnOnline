@@ -22,3 +22,25 @@
     grid-row-end: span 2;
     grid-column-start: 2;
 }
+
+a.playerLink {
+    color: white;
+}
+
+a.activePlayer {
+    animation-duration: 0.7s;
+    animation-name: showActive;
+    animation-iteration-count: 2;
+}
+
+@keyframes showActive {
+    0% {
+        filter: none;
+    }
+    50% {
+        filter: hue-rotate(90deg);
+    }
+    100% {
+        filter: none;
+    }
+}

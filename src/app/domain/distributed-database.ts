@@ -175,8 +175,12 @@ export class DistributedDatabaseSystem {
     return this.databases[database].get(id);
   }
 
-  on(eventType: string, database: string, action: Function) {
-    this.callbacks[eventType][database] = action;
+  on(eventType: string | string[], database: string, action: Function) {
+    if (typeof eventType !== 'string') {
+      eventType.forEach(x => this.on(x, database, action));
+    } else {
+      this.callbacks[eventType][database] = action;
+    }
   }
 
   sendCommandTo(receiverId: string, command: string, data: any) {

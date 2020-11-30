@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
 import { CardBag, CardStash, OtherPlayer } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 
@@ -12,10 +13,16 @@ export class OtherPlayerComponent implements OnInit {
   @Input()
   public me!: OtherPlayer;
 
+  private destroy = new Subject<void>();
+
   constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.me.subscribeForUpdate(() => this.cdr.detectChanges());
+    this.me.subscribeForUpdate(() => this.cdr.detectChanges(), this.destroy);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy.next();
   }
 
   get name(): string {

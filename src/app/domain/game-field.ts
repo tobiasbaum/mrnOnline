@@ -1,5 +1,6 @@
 import { SafeUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { DistributedDatabaseSystem } from './distributed-database';
 
 class CardType {
@@ -269,18 +270,19 @@ class CardType {
   
   }
   
-  class SelfPlayer {
-      public id: string;
-      public name: string;
-      public library: CardStash;
-      public hand: CardBag;
-      public table: CardBag;
-      public graveyard: CardStash;
-      public exile: CardBag;
+  class SelfPlayer implements PlayerData {
+      public readonly id: string;
+      public readonly name: string;
+      public readonly library: CardStash;
+      public readonly hand: CardBag;
+      public readonly table: CardBag;
+      public readonly graveyard: CardStash;
+      public readonly exile: CardBag;
       public lifes: number;
-      public color: string;
-      public db: DistributedDatabaseSystem;
-      private subject: Subject<void> = new Subject();
+      public readonly color: string;
+      public readonly db: DistributedDatabaseSystem;
+      public readonly orderNumber: number;
+      private readonly subject: Subject<void> = new Subject();
 
     constructor(id: string, name: string, deck: Card[], db: DistributedDatabaseSystem) {
       this.id = id;
@@ -298,6 +300,7 @@ class CardType {
       this.lifes = 20;
       this.db.put('lifes', this.id, this.lifes);
       this.color = 'hsl(' + (Math.floor(Math.random() * 72) * 5) + ',90%,40%)';
+      this.orderNumber = Math.random();
 
       this.db.on('receiveCommand', 'putToGraveyard', (cardDto: DtoCard) => this.addToGraveyard(cardFromDto(cardDto)));
       this.db.on('receiveCommand', 'modifyCard', (x: any) => this.modifyWithOthersCard(x.tgt, cardFromDto(x.card)));
@@ -555,27 +558,48 @@ class CardType {
       this.addToTable(card);
     }
   }
+
+  interface PlayerData {
+    id: string,
+    name: string,
+    color: string,
+    orderNumber: number;
+  }
   
-  export class OtherPlayer {
+  export class OtherPlayer implements PlayerData {
     private subject: Subject<void> = new Subject();
     private cachedGraveyard: CardStash = new CardStash([]);
     private cachedTable: CardStash = new CardStash([]);;
 
     constructor(public id: string, public db: DistributedDatabaseSystem) {
-      db.on('update', 'graveyards', (playerId: string, content: DtoCard[]) => {
+      db.on(['add', 'update'], 'graveyards', (playerId: string, content: DtoCard[]) => {
         if (playerId === this.id) {
           this.cachedGraveyard = this.map(content);
+          this.notifyUpdate();
         }
       });
-      db.on('update', 'tables', (playerId: string, content: DtoCard[]) => {
+      db.on(['add', 'update'], 'tables', (playerId: string, content: DtoCard[]) => {
         if (playerId === this.id) {
           this.cachedTable = this.map(content);
+          this.notifyUpdate();
         }
       });
     }
   
     get name(): string {
-      return this.db.get('playerNames', this.id);
+      return this.playerData?.name;
+    }
+
+    get orderNumber(): number {
+      return this.playerData?.orderNumber;
+    }
+
+    get color(): string {
+      return this.playerData?.color;
+    }
+
+    private get playerData(): PlayerData {
+      return this.db.get('playerData', this.id);
     }
   
     get lifes(): number {
@@ -607,8 +631,8 @@ class CardType {
       this.subject.next();
     }
   
-    subscribeForUpdate(arg0: () => void) {
-      this.subject.subscribe(arg0);
+    subscribeForUpdate(arg0: () => void, destroy: Subject<void>) {
+      this.subject.pipe(takeUntil(destroy)).subscribe(arg0);
     }
 
     hasCard(cardId: number): boolean {
@@ -631,14 +655,18 @@ class CardType {
     constructor(peer: any, ownId: string, ownName: string, deck: Card[]) {
       this.others = [];
       this.db = new DistributedDatabaseSystem(peer, ownId);
-      this.db.on('add', 'playerNames', (id: string, name: any) => this.updatePlayer(id));
-      this.db.on('update', 'playerNames', (id: string, name: any) => this.updatePlayer(id));
+      this.db.on('add', 'playerData', (id: string, name: any) => this.updatePlayer(id));
+      this.db.on('update', 'playerData', (id: string, name: any) => this.updatePlayer(id));
       this.db.on('update', 'lifes', (id: string, cnt: any) => this.updatePlayer(id));
       this.db.on('update', 'graveyards', (id: string, cards: any) => this.updatePlayer(id));
       this.db.on('update', 'tables', (id: string, cards: any) => this.updatePlayer(id));
   
       this.myself = new SelfPlayer(ownId, ownName, deck, this.db);
-      this.db.put('playerNames', ownId, ownName);
+      this.db.put('playerData', ownId, {
+        name: ownName,
+        color: this.myself.color,
+        orderNumber: this.myself.orderNumber
+      });
     }
 
     registerMessageHandler(handler: Function) {
@@ -674,13 +702,27 @@ class CardType {
         this.setCurrentPlayer(this.others[idx - 1].name);
       }
     }
-  
+
     nextPlayer() {
-      if (this.others.length === 0) {
+      this.ensurePlayersSorted();
+      let withLargerNumber = this.others.filter(x => x.orderNumber > this.myself.orderNumber);
+      if (withLargerNumber.length > 0) {
+        this.setCurrentPlayer(withLargerNumber[0].name);
+      } else if (this.others.length === 0) {
         this.setCurrentPlayer(this.myself.name);
       } else {
         this.setCurrentPlayer(this.others[0].name);
       }
+    }
+
+    get allPlayers(): PlayerData[] {
+      let ret = [this.myself, ...this.others];
+      ret.sort((a, b) => a.orderNumber - b.orderNumber);
+      return ret;
+    }
+
+    private ensurePlayersSorted() {
+      this.others.sort((a, b) => a.orderNumber - b.orderNumber);
     }
 
     setCurrentPlayer(name: string) {
@@ -689,6 +731,7 @@ class CardType {
     }
   
     updatePlayer(id: string) {
+      this.ensurePlayersSorted();
       this.others.find(p => p.id === id)?.notifyUpdate();
     }
   
