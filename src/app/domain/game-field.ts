@@ -1,4 +1,3 @@
-import { SafeUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DistributedDatabaseSystem } from './distributed-database';
@@ -51,8 +50,9 @@ class CardType {
     public id: number;
     public state: CardState = CardState.Normal;
     private mods: Card[];
+    public counter: string | undefined;
   
-    constructor(type: CardType, controllerId: string, id?: number, tapped?: boolean, mods?: Card[]) {
+    constructor(type: CardType, controllerId: string, id?: number, tapped?: boolean, mods?: Card[], counter?: string) {
       this.type = type;
       this.controllerId = controllerId;
       if (typeof id === 'undefined') {
@@ -70,6 +70,7 @@ class CardType {
       } else {
         this.mods = mods;
       }
+      this.counter = counter;
     }
 
     get tapped(): boolean {
@@ -152,7 +153,8 @@ class CardType {
         cntr: this.controllerId,
         type: this.type.toDto(),
         tapped: this.tapped,
-        mods: this.mods.map(x => x.toDto())
+        mods: this.mods.map(x => x.toDto()),
+        counter: this.counter
       }
     }
   }
@@ -167,10 +169,11 @@ class CardType {
       id: number;
       tapped: boolean;
       mods: DtoCard[];
+      counter: string | undefined;
   }
   
   function cardFromDto(dto: DtoCard): Card {
-    return new Card(cardTypeFromDto(dto.type), dto.cntr, dto.id, dto.tapped, dto.mods.map(cardFromDto));
+    return new Card(cardTypeFromDto(dto.type), dto.cntr, dto.id, dto.tapped, dto.mods.map(cardFromDto), dto.counter);
   }
   
   export abstract class CardCollection implements Iterable<Card> {
@@ -450,6 +453,17 @@ class CardType {
       let collData = this.getContainingCollection(modifierCardId);
       let card = this.removeFromCollection(collData, modifierCardId);
       this.applyModification(toModify, card);
+    }
+
+    setCounter(cardId: number, value: string | undefined) {
+      let card = this.table.getById(cardId);
+      if (!card) {
+        return;
+      }
+      card.counter = value;
+      this.db.put('tables', this.id, this.table.toDto());
+      this.sendNotification('setzt Counter für ' + card.name + ' auf ' + value);
+      this.subject.next();
     }
 
     modifyOtherPlayersCard(modifierCardId: number, toModifyCardId: number, otherPlayerId: string) {

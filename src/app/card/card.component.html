@@ -2,6 +2,7 @@
   <div [class.tapped]="card.tapped" [class.blocker]="card.markedAsBlocker" class="cardStack" >
     <img *ngFor="let m of card.reversedModifiers" class="card" (mouseover)="this.hover(m)" [src]="m.img | isSafeUrl" title="{{m.name}}" />
     <img class="card" (mouseover)="this.hover(card)" [src]="card.img | isSafeUrl" title="{{card.name}}" />
+    <div *ngIf="card.counter" class="counter">{{card.counter}}</div>
   </div>
   <div class="dropdown-content">
     <ng-container *ngIf="!isModifyMode">
@@ -11,6 +12,7 @@
       <a *ngIf="act.includes('PL')" (click)="gameField.myself.putIntoPlay(card.id)">ins Spiel bringen</a>
       <a *ngIf="act.includes('PT')" (click)="gameField.myself.putIntoPlayTapped(card.id)">getappt ins Spiel bringen</a>
       <a *ngIf="act.includes('MO') && !card.isModified" (click)="modifyOtherCard(card.id)">auf andere Karte legen</a>
+      <a *ngIf="act.includes('CO')" (click)="setCounter(card)">Counter setzen</a>
       <a *ngIf="act.includes('GR')" (click)="gameField.myself.putToGraveyard(card.id)">auf Friedhof legen</a>
       <a *ngIf="act.includes('EX')" (click)="gameField.myself.putToExile(card.id)">ganz aus dem Spiel nehmen</a>
       <a *ngIf="act.includes('DR')" (click)="gameField.myself.drawCard(card.id)">ziehen</a>

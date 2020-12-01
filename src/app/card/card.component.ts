@@ -56,6 +56,18 @@ export class CardComponent implements OnInit {
     return this.mode.isModifyMode;
   }
 
+  setCounter(card: Card) {
+    let value = prompt('Counter-Wert', card.counter);
+    if (value === null) {
+      return;
+    }
+    if (value === '') {
+      this.gameField.myself.setCounter(card.id, undefined);
+    } else {
+      this.gameField.myself.setCounter(card.id, value);
+    }
+  }
+
   modifyTargetSelected(targetId: number) {
     if (this.mode.savedId !== targetId) {
       this.gameField.modifyOtherCard(this.mode.savedId, targetId);
