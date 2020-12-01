@@ -227,7 +227,7 @@ class CardType {
     }
   
     add(card: Card): void {
-      this.cards.push(card);
+      this.cards.unshift(card);
     }
   
     shuffle() {
@@ -424,6 +424,20 @@ class CardType {
       card.untap();
       this.addToHand(card);
       this.sendNotification('nimmt ' + card.name + ' auf die Hand');
+      this.subject.next();
+    }
+  
+    putOnLibrary(cardId: number) {
+      let coll = this.getContainingCollection(cardId);
+      let card = this.removeFromCollection(coll, cardId);
+      card.untap();
+      this.library.add(card);
+      this.db.put('librarySizes', this.id, this.library.size);
+      if (coll?.countOnly) {
+        this.sendNotification('legt eine Karte oben auf die Bibliothek');
+      } else {
+        this.sendNotification('legt ' + card.name + ' oben auf die Bibliothek');
+      }
       this.subject.next();
     }
   

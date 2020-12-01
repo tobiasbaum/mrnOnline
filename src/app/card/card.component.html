@@ -14,7 +14,8 @@
       <a *ngIf="act.includes('GR')" (click)="gameField.myself.putToGraveyard(card.id)">auf Friedhof legen</a>
       <a *ngIf="act.includes('EX')" (click)="gameField.myself.putToExile(card.id)">ganz aus dem Spiel nehmen</a>
       <a *ngIf="act.includes('DR')" (click)="gameField.myself.drawCard(card.id)">ziehen</a>
-      <a *ngIf="act.includes('HA')" (click)="gameField.myself.putToHand(card.id)">zurück auf die Hand nehmen</a>  
+      <a *ngIf="act.includes('HA') && !card.type.token" (click)="gameField.myself.putToHand(card.id)">zurück auf die Hand nehmen</a>  
+      <a *ngIf="act.includes('LI') && !card.type.token" (click)="gameField.myself.putOnLibrary(card.id)">oben auf Bibliothek legen</a>  
       <a *ngIf="card.isModified" (click)="openStack()">Einzelkarten auffächern</a>  
     </ng-container>
     <ng-container *ngIf="isModifyMode">

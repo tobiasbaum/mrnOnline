@@ -1,7 +1,7 @@
 <fieldset id="{{id}}">
 <legend [class.turn]="isCurrentPlayer()"><b>{{name}}</b> (ID: {{id}})</legend>
-    <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX'"></mrn-card-collection>
-    <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO'"></mrn-card-collection>
+    <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
+    <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,LI'"></mrn-card-collection>
     <button (click)="this.untapAll()">Alles enttappen</button>
     <div>Bibliothek: {{this.librarySize()}} Karten. 
         <button (click)="this.drawCard()">Karte ziehen</button>
@@ -9,7 +9,7 @@
         <button (click)="this.shuffleLibrary()">Bibliothek mischen</button>
         <button (click)="this.createToken()">Token erstellen</button>
     </div>
-    <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA,EX'" [collapsed]="true"></mrn-card-collection>
+    <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA,EX,LI'" [collapsed]="true"></mrn-card-collection>
     <mrn-card-collection *ngIf="this.exile.size > 0" [collection]="this.exile" name="Aus dem Spiel" [act]="'GR'" [collapsed]="true"></mrn-card-collection>
     <div>Lebenspunkte: {{this.lifes}}
         <button (click)="this.increaseLifes()">+</button>
