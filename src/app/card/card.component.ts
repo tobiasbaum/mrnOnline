@@ -45,7 +45,7 @@ export class CardComponent implements OnInit {
   }
 
   hover(c: Card) {
-    this.hc.setCard(c);
+    this.hc.setCard(c.type);
   }
 
   modifyOtherCard(cardId: number) {

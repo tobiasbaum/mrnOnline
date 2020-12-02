@@ -1,6 +1,6 @@
-<div><span (click)="this.collapsed = !this.collapsed">{{this.name}}: {{this.collection.size}} Karten.</span>
+<div><span (click)="this.collapsed = !this.collapsed">{{this.name}}: {{this.collection.size}} Karten. </span>
     <ng-container *ngIf="collapsed">
-        {{this.cardString()}}
+        <span *ngFor="let c of this.cardCombined(); let i = index" (mouseover)="this.hover(c.type)"><ng-container *ngIf="i !== 0">, </ng-container>{{c.text}}</span>
     </ng-container>
     <ng-container *ngIf="!collapsed">
         <br/>

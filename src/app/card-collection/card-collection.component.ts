@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CardCollection } from '../domain/game-field';
+import { CardCollection, CardType } from '../domain/game-field';
+import { HoveredCardService } from '../hovered-card.service';
 
 @Component({
   selector: 'mrn-card-collection',
@@ -20,12 +21,12 @@ export class CardCollectionComponent implements OnInit {
   @Input()
   public collapsed: boolean = false;
 
-  constructor() { }
+  constructor(private hc: HoveredCardService) { }
 
   ngOnInit(): void {
   }
 
-  cardString(): string {
+  cardCombined() {
     let counts: Map<string, number> = new Map();
     this.collection.cards.forEach(c => {
       if (counts.has(c.name)) {
@@ -34,21 +35,30 @@ export class CardCollectionComponent implements OnInit {
         counts.set(c.name, 1);
       }
     });
-    let names: string[] = [];
+    let types: CardType[] = [];
     this.collection.cards.forEach(c => {
-      if (names.indexOf(c.name) < 0) {
-        names.push(c.name);
+      if (types.indexOf(c.type) < 0) {
+        types.push(c.type);
       }
     });
-    return names
+    return types
       .map(n => {
-        if (counts.get(n) as number > 1) {
-          return n + ' (x' + counts.get(n) + ')';
+        if (counts.get(n.name) as number > 1) {
+          return {
+            text: n.name + ' (x' + counts.get(n.name) + ')',
+            type: n
+          } 
         } else {
-          return n;
+          return {
+            text: n.name,
+            type: n
+          } 
         }
-      })
-      .join(", ");
+      });
+  }
+
+  hover(c: CardType) {
+    this.hc.setCard(c);
   }
 
 }

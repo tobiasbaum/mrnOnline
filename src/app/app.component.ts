@@ -34,8 +34,8 @@ export class AppComponent {
   }
 
   createPeer(name: string) {
-    var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
-    //var peer = new Peer(undefined, {});
+    //var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
+    var peer = new Peer(undefined, {});
     peer.on('error', (err: any) => {
         console.log(err);
         alert('' + err);

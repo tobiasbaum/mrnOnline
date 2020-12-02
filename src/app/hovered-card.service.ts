@@ -1,20 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Card } from './domain/game-field';
+import { CardType } from './domain/game-field';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HoveredCardService {
 
-  public store: Subject<Card> = new Subject<Card>();
+  public store: Subject<CardType> = new Subject<CardType>();
 
-  public setCard(c: Card): void {
+  public setCard(c: CardType): void {
     this.store.next(c);
   }
 
-  public subscribe(handler: (c:Card) => void, destroy: Subject<any>): void {
+  public subscribe(handler: (c:CardType) => void, destroy: Subject<any>): void {
     this.store
       .pipe(takeUntil(destroy))
       .subscribe(handler);
