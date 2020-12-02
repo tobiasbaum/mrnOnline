@@ -1,4 +1,6 @@
 <div *ngIf="this.service.isShown" class="glass-pane">
-    <button (click)="this.hide()">Schließen</button>
-    <mrn-card-collection [name]="this.service.name" [collection]="this.service.collection" [act]="this.service.act"></mrn-card-collection>
+    <div class="content-pane">
+        <button (click)="this.hide()">Schließen</button>
+        <mrn-card-collection [name]="this.service.name" [collection]="this.service.collection" [act]="this.service.act"></mrn-card-collection>    
+    </div>
 </div>
