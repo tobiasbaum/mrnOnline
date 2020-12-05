@@ -66,11 +66,16 @@ export class DistributedDatabaseSystem {
   }
 
   connectToNode(id: string) {
+    console.log(this.ownName + ' connects to ' + id);
     var conn = this.peer.connect(id, {reliable: true});
     this.addNode(conn);
   }
 
   addNode(conn: any) {
+    if (this.others.indexOf(conn) >= 0) {
+      return;
+    }
+    console.log('node added to ' + this.ownName + ': ' + conn.peer);
     this.otherNames.push(conn.peer);
     this.others.push(conn);
     var _this = this;
@@ -89,7 +94,7 @@ export class DistributedDatabaseSystem {
   }
 
   private handleData(d: any) {
-    console.log('received: ' + JSON.stringify(d));
+    console.log(this.ownName + ' received: ' + JSON.stringify(d));
     if (d.cmd) {
       this.handleCommand(d);
       return;
@@ -97,6 +102,7 @@ export class DistributedDatabaseSystem {
     this.time = Math.max(this.time, d.t);
     this.ensureDbExists(d.db);
     let eventType = this.databases[d.db].put(d.t, d.id, d.dta);
+    console.log('type: ' + eventType);
     if (this.callbacks[eventType][d.db]) {
       this.callbacks[eventType][d.db](d.id, d.dta);
     }
@@ -138,12 +144,11 @@ export class DistributedDatabaseSystem {
   }
 
   private establishConnectionToUnknownNodes(packet: any) {
-    let _this = this;
     let nameSet = new Set(this.otherNames);
     nameSet.add(this.ownName);
-    packet.rcv.filter((x: string) => !nameSet.has(x)).forEach(function (x: string) {
-      _this.connectToNode(x);
-    });
+    packet.rcv
+      .filter((x: string) => !nameSet.has(x))
+      .forEach((x: string) => this.connectToNode(x));
     if (!nameSet.has(packet.src)) {
       this.connectToNode(packet.src);
     }
