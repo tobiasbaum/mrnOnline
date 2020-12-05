@@ -588,6 +588,7 @@ class CardType {
     createToken(name: string) {
       let type = new CardType(name, undefined, true);
       let card = new Card(type, this.id);
+      this.sendNotification('bringt Token ' + card.name + ' ins Spiel');
       this.addToTable(card);
     }
   }
