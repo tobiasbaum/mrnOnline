@@ -25,7 +25,7 @@ export class AppComponent {
 
   constructor(public fieldService: GameFieldStoreService, private http: HttpClient, cdr: ChangeDetectorRef) {
     fieldService.subscribe(
-      f => f.registerPlayerChangeHandler(() => {cdr.detectChanges()}),
+      f => f.registerPlayerChangeHandler(() => {cdr.markForCheck()}),
       this.destroy);
   }
 

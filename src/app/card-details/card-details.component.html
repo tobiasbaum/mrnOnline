@@ -1,1 +1,1 @@
-<img id="largeCard" src="{{current.img}}" title="{{current.name}}" width="240px" />
+<img id="largeCard" src="{{(current | async)?.img}}" title="{{(current | async)?.name}}" width="240px" />

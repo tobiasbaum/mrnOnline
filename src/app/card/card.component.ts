@@ -30,7 +30,7 @@ export class CardComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private mcc: ModalCardCollectionService) {
 
-    mode.subscribe(() => cdr.detectChanges(), this.destroy);
+    mode.subscribe(() => cdr.markForCheck(), this.destroy);
   }
 
   ngOnInit(): void {
@@ -45,6 +45,7 @@ export class CardComponent implements OnInit {
   }
 
   hover(c: Card) {
+    console.log('hover ' + c.name);
     this.hc.setCard(c.type);
   }
 

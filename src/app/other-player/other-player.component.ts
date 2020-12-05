@@ -18,7 +18,7 @@ export class OtherPlayerComponent implements OnInit {
   constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.me.subscribeForUpdate(() => this.cdr.detectChanges(), this.destroy);
+    this.me.subscribeForUpdate(() => this.cdr.markForCheck(), this.destroy);
   }
 
   ngOnDestroy(): void {

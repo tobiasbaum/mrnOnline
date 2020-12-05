@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Output } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { GameField, MsgData } from '../domain/game-field';
+import { MsgData } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 
 @Component({
@@ -8,11 +8,12 @@ import { GameFieldStoreService } from '../game-field-store.service';
   templateUrl: './chat-box.component.html',
   styleUrls: ['./chat-box.component.scss']
 })
-export class ChatBoxComponent implements OnInit {
+export class ChatBoxComponent implements OnInit, AfterViewChecked {
 
   public messages: MsgData[] = [];
 
   private destroy = new Subject();
+  private scrollDirty: boolean = false;
 
   constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) { 
     field.subscribe(
@@ -29,8 +30,16 @@ export class ChatBoxComponent implements OnInit {
 
   handleAddedMessage(msg: MsgData) {
     this.messages.push(msg);
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
+    this.scrollDirty = true;
     this.scrollToBottom();
+  }
+
+  ngAfterViewChecked() {
+    if (this.scrollDirty) {
+      this.scrollDirty = false;
+      setTimeout(() => this.scrollToBottom());
+    }
   }
 
   scrollToBottom() {

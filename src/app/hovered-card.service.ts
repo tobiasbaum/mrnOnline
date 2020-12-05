@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CardType } from './domain/game-field';
 
@@ -7,17 +7,15 @@ import { CardType } from './domain/game-field';
   providedIn: 'root'
 })
 export class HoveredCardService {
-
-  public store: Subject<CardType> = new Subject<CardType>();
+  private store: Subject<CardType> = new Subject<CardType>();
 
   public setCard(c: CardType): void {
+    console.log('set hovered card: ' + c.name);
     this.store.next(c);
   }
 
-  public subscribe(handler: (c:CardType) => void, destroy: Subject<any>): void {
-    this.store
-      .pipe(takeUntil(destroy))
-      .subscribe(handler);
+  current(): Observable<CardType> {
+    return this.store;
   }
 
   constructor() { }
