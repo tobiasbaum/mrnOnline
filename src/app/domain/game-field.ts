@@ -380,7 +380,7 @@ class CardType {
         this.sendNotification('Token ' + card.name + ' verschwindet');
         return;
       }
-      card.untap();
+      this.clearCardState(card);
       if (this.id === card.controllerId) {
         this.graveyard.add(card);
         this.db.put('graveyards', this.id, this.graveyard.toDto());  
@@ -388,6 +388,11 @@ class CardType {
       } else {
         this.db.sendCommandTo(card.controllerId, 'putToGraveyard', card.toDto());
       }
+    }
+
+    private clearCardState(card: Card) {
+      card.untap();
+      card.counter = undefined;
     }
   
     putToExile(cardId: number) {
@@ -397,7 +402,7 @@ class CardType {
         this.sendNotification('Token ' + card.name + ' verschwindet');
         return;
       }
-      card.untap();
+      this.clearCardState(card);
       this.exile.add(card);
       this.db.put('exiles', this.id, this.exile.toDto());
       this.sendNotification('nimmt ' + card.name + ' ganz aus dem Spiel');
@@ -424,7 +429,7 @@ class CardType {
     putToHand(cardId: number) {
       let coll = this.getContainingCollection(cardId);
       let card = this.removeFromCollection(coll, cardId);
-      card.untap();
+      this.clearCardState(card);
       this.addToHand(card);
       this.sendNotification('nimmt ' + card.name + ' auf die Hand');
       this.subject.next();
@@ -433,7 +438,7 @@ class CardType {
     putOnLibrary(cardId: number) {
       let coll = this.getContainingCollection(cardId);
       let card = this.removeFromCollection(coll, cardId);
-      card.untap();
+      this.clearCardState(card);
       this.library.add(card);
       this.db.put('librarySizes', this.id, this.library.size);
       if (coll?.countOnly) {
