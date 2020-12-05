@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CardBag } from '../domain/game-field';
 
 import { CardCollectionComponent } from './card-collection.component';
 
@@ -16,6 +17,7 @@ describe('CardCollectionComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CardCollectionComponent);
     component = fixture.componentInstance;
+    component.collection = new CardBag([]);
     fixture.detectChanges();
   });
 

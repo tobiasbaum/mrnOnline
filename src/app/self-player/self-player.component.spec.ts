@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { GameField } from '../domain/game-field';
+import { GameFieldStoreService } from '../game-field-store.service';
 
 import { SelfPlayerComponent } from './self-player.component';
 
@@ -15,7 +17,9 @@ describe('SelfPlayerComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SelfPlayerComponent);
-    component = fixture.componentInstance;
+    let fieldService = TestBed.inject(GameFieldStoreService);
+    fieldService.init(new GameField(null, 'x', 'y', []));
+    component = fixture.componentInstance;    
     fixture.detectChanges();
   });
 
