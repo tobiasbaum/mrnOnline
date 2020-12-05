@@ -1,9 +1,8 @@
-import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, NgZone, OnInit, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { CardBag, CardStash, GameField } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 import { ModalCardCollectionService } from '../modal-card-collection.service';
-import { ModalCardCollectionComponent } from '../modal-card-collection/modal-card-collection.component';
 
 @Component({
   selector: 'mrn-self-player',
@@ -16,10 +15,11 @@ export class SelfPlayerComponent implements OnInit {
 
   constructor(
       private field: GameFieldStoreService, 
-      private cdr: ChangeDetectorRef, 
-      private mcc: ModalCardCollectionService) {
+      private mcc: ModalCardCollectionService,
+      cdr: ChangeDetectorRef, 
+      ngz: NgZone) {
     field.subscribe(
-      (f: GameField) => f.myself.subscribeForUpdate(() => cdr.markForCheck()),
+      (f: GameField) => f.myself.subscribeForUpdate(() => ngz.run(() => cdr.markForCheck())),
       this.destroy);
   }
 

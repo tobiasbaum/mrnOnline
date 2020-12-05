@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { MsgData } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
@@ -15,7 +15,7 @@ export class ChatBoxComponent implements OnInit, AfterViewChecked {
   private destroy = new Subject();
   private scrollDirty: boolean = false;
 
-  constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef) { 
+  constructor(private field: GameFieldStoreService, private cdr: ChangeDetectorRef, private ngz: NgZone) { 
     field.subscribe(
       gf => gf.registerMessageHandler((id: undefined, msg: any) => this.handleAddedMessage(msg)),
       this.destroy);
@@ -29,10 +29,13 @@ export class ChatBoxComponent implements OnInit, AfterViewChecked {
   }
 
   handleAddedMessage(msg: MsgData) {
-    this.messages.push(msg);
-    this.cdr.markForCheck();
-    this.scrollDirty = true;
-    this.scrollToBottom();
+    this.ngz.run(() => {
+      NgZone.assertInAngularZone();
+      this.messages.push(msg);
+      this.cdr.markForCheck();
+      this.scrollDirty = true;
+      this.scrollToBottom();  
+    });
   }
 
   ngAfterViewChecked() {
