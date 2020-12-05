@@ -37,7 +37,7 @@ export class CardCollectionComponent implements OnInit {
     });
     let types: CardType[] = [];
     this.collection.cards.forEach(c => {
-      if (types.indexOf(c.type) < 0) {
+      if (!types.find(t => t.name === c.type.name)) {
         types.push(c.type);
       }
     });
