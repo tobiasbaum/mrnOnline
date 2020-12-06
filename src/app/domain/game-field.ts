@@ -732,6 +732,7 @@ class CardType {
     }
 
     shuffleStartPlayer() {
+      this.ensurePlayersSorted();
       let idx = Math.floor(Math.random() * (this.others.length + 1));
       if (idx === 0) {
         this.setCurrentPlayer(this.myself.name);
