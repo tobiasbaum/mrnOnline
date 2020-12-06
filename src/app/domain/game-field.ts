@@ -818,7 +818,7 @@ class CardType {
     }
 
     sendGlobalNotification(msg: string) {
-      this.sendMessageRaw({color: 'black', tc: curTime() + ' ' + name + ' ist am Zug', tr: ''});
+      this.sendMessageRaw({color: 'black', tc: curTime() + ' ' + msg, tr: ''});
     }
   
     sendMessageRaw(msg: MsgData) {
