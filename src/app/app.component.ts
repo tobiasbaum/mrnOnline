@@ -17,9 +17,21 @@ export class AppComponent {
   public state: string = 'initial';
 
   public formData = {
-    playerName: localStorage.getItem('mrnUserName'),
-    deckUrl: './assets/stubData.json'
-  } 
+    playerName: this.getSettingValue('mrnUserName', ''),
+    deckUrl: this.getSettingValue('deck', './assets/stubData.json')
+  }
+
+  getSettingValue(key: string, defaultValue: string) {
+    let paramValue = new URL(location.href).searchParams.get(key);
+    if (paramValue) {
+      return paramValue;
+    }
+    let storedValue = localStorage.getItem(key);
+    if (storedValue) {
+      return storedValue;
+    }
+    return defaultValue;
+  }
 
   private destroy = new Subject();
 
