@@ -114,7 +114,7 @@ export class DistributedDatabaseSystem {
 
   private handleCommand(d: any) {
     if (this.callbacks['receiveCommand'][d.cmd]) {
-      this.callbacks['receiveCommand'][d.cmd](d.dta);
+      this.callbacks['receiveCommand'][d.cmd].forEach((f: Function) => f(d.dta));
     }
   }
 

@@ -280,4 +280,29 @@ describe('DistributedDatabaseSystem', () => {
             'add/update z,["1"]\n');
     });
 
+    it('can send and receive commands', () => {
+        let dbs1 = createDBS('user1');
+        let log1 = '';
+        dbs1.on('receiveCommand', 'c1', (data: any) => log1 += 'c1 ' + data + '\n');
+        dbs1.on('receiveCommand', 'c2', (data: any) => log1 += 'c2 ' + data + '\n');
+        let dbs2 = createDBS('user2');
+        let log2 = '';
+        dbs2.on('receiveCommand', 'c1', (data: any) => log2 += 'c1 ' + data + '\n');
+        dbs2.on('receiveCommand', 'c3', (data: any) => log2 += 'c3 ' + data + '\n');
+
+        dbs1.connectToNode('user2');
+        stubNetwork.exchangeMessages();
+
+        dbs1.sendCommandTo('user2', 'c1', 23);
+        dbs1.sendCommandTo('user2', 'c2', 24);
+        dbs1.sendCommandTo('user2', 'c3', 25);
+        dbs2.sendCommandTo('user1', 'c1', 42);
+        dbs2.sendCommandTo('user1', 'c2', 43);
+        dbs2.sendCommandTo('user1', 'c3', 44);
+        stubNetwork.exchangeMessages();
+
+        expect(log1).toEqual('c1 42\nc2 43\n');
+        expect(log2).toEqual('c1 23\nc3 25\n');
+    });
+
 });

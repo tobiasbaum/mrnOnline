@@ -66,6 +66,10 @@ export class SelfPlayerComponent implements OnInit {
     return this.field.gameField.myself.exile;
   }
 
+  get isInGame(): boolean {
+    return this.field.gameField.myself.isInGame;
+  }
+
   untapAll() {
     this.field.gameField.myself.untapAll();
   }

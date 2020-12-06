@@ -1,5 +1,6 @@
 <fieldset id="{{id}}">
 <legend [class.turn]="isCurrentPlayer()"><b>{{name}}</b> (ID: {{id}})</legend>
+<ng-container *ngIf="this.isInGame">
     <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
     <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
     <button (click)="this.untapAll()">Alles enttappen</button>
@@ -17,4 +18,8 @@
         <button (click)="this.multiLifeIncrease()">+X ...</button>
         <button (click)="this.multiLifeDecrease()">-X ...</button>
     </div>
+</ng-container>
+<ng-container *ngIf="!this.isInGame">
+    Hat das Spiel verlassen.
+</ng-container>
 </fieldset>

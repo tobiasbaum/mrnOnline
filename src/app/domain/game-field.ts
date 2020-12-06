@@ -302,11 +302,35 @@ class CardType {
       this.db.put('exiles', this.id, this.exile.toDto());
       this.lifes = 20;
       this.db.put('lifes', this.id, this.lifes);
-      this.color = 'hsl(' + (Math.floor(Math.random() * 72) * 5) + ',90%,40%)';
+      let h = Math.floor(Math.random() * 72) * 5;
+      let s = 85 + Math.floor(Math.random() * 10);
+      let l = 35 + Math.floor(Math.random() * 10);
+      this.color = 'hsl(' + h + ',' + s + '%,' + l + '%)';
       this.orderNumber = Math.random();
 
+      this.db.on(['add', 'update'], 'endedPlayers', (id: string, dta: boolean) => { 
+        if (dta) {
+          this.handlePlayerEnd(id);
+        }
+      });
       this.db.on('receiveCommand', 'putToGraveyard', (cardDto: DtoCard) => this.addToGraveyard(cardFromDto(cardDto)));
       this.db.on('receiveCommand', 'modifyCard', (x: any) => this.modifyWithOthersCard(x.tgt, cardFromDto(x.card)));
+    }
+
+    private handlePlayerEnd(playerId: string) {
+      let allCardsOfPlayer: Card[] = [];
+      this.table.cards.forEach((c: Card) => {
+        if (c.controllerId === playerId) {
+          allCardsOfPlayer.push(c);
+        }
+        c.modifiers.forEach((m: Card) => {
+          if (m.controllerId === playerId) {
+            allCardsOfPlayer.push(m);
+          }
+        });
+      });
+      allCardsOfPlayer.forEach(c => this.putToGraveyard(c.id));
+      this.subject.next();
     }
   
     subscribeForUpdate(arg0: () => void): void {
@@ -321,6 +345,10 @@ class CardType {
         }
     }
 
+    get isInGame(): boolean {
+      return !this.db.get('endedPlayers', this.id);
+    }
+  
     untapAll() {
       this.table.cards.forEach(c => {
         if (!c.normal) {
@@ -606,16 +634,9 @@ class CardType {
     private cachedTable: CardStash = new CardStash([]);;
 
     constructor(public id: string, public db: DistributedDatabaseSystem) {
-      this.db.on(['add', 'update'], 'playerData', (playerId: string, name: any) => {
-        if (playerId === this.id) {
-          this.notifyUpdate();
-        }
-      });
-      this.db.on(['add', 'update'], 'lifes', (playerId: string, cnt: any) => {
-        if (playerId === this.id) {
-          this.notifyUpdate();
-        }
-      });
+      this.db.on(['add', 'update'], 'playerData', (playerId: string, name: any) => this.notifyIfRightId(playerId));
+      this.db.on(['add', 'update'], 'lifes', (playerId: string, cnt: any) => this.notifyIfRightId(playerId));
+      this.db.on(['add', 'update'], 'endedPlayers', (playerId: string, cnt: any) => this.notifyIfRightId(playerId));
       db.on(['add', 'update'], 'graveyards', (playerId: string, content: DtoCard[]) => {
         if (playerId === this.id) {
           this.cachedGraveyard = this.map(content);
@@ -628,6 +649,12 @@ class CardType {
           this.notifyUpdate();
         }
       });
+    }
+
+    private notifyIfRightId(playerId: string) {
+      if (playerId === this.id) {
+        this.notifyUpdate();
+      }
     }
   
     get name(): string {
@@ -644,6 +671,10 @@ class CardType {
 
     private get playerData(): PlayerData {
       return this.db.get('playerData', this.id);
+    }
+
+    get isInGame(): boolean {
+      return !this.db.get('endedPlayers', this.id);
     }
   
     get lifes(): number {
@@ -733,28 +764,26 @@ class CardType {
 
     shuffleStartPlayer() {
       this.ensurePlayersSorted();
-      let idx = Math.floor(Math.random() * (this.others.length + 1));
-      if (idx === 0) {
-        this.setCurrentPlayer(this.myself.name);
-      } else {
-        this.setCurrentPlayer(this.others[idx - 1].name);
-      }
+      let inGame = this.allActivePlayers;
+      let idx = Math.floor(Math.random() * inGame.length);
+      this.setCurrentPlayer(inGame[idx].name);
     }
 
     nextPlayer() {
       this.ensurePlayersSorted();
-      let withLargerNumber = this.others.filter(x => x.orderNumber > this.myself.orderNumber);
+      let inGame = this.others.filter(x => x.isInGame);
+      let withLargerNumber = inGame.filter(x => x.orderNumber > this.myself.orderNumber);
       if (withLargerNumber.length > 0) {
         this.setCurrentPlayer(withLargerNumber[0].name);
-      } else if (this.others.length === 0) {
+      } else if (inGame.length === 0) {
         this.setCurrentPlayer(this.myself.name);
       } else {
-        this.setCurrentPlayer(this.others[0].name);
+        this.setCurrentPlayer(inGame[0].name);
       }
     }
 
-    get allPlayers(): PlayerData[] {
-      let ret = [this.myself, ...this.others];
+    get allActivePlayers(): PlayerData[] {
+      let ret = [this.myself, ...this.others].filter(x => x.isInGame);
       ret.sort((a, b) => a.orderNumber - b.orderNumber);
       return ret;
     }
@@ -765,11 +794,15 @@ class CardType {
 
     setCurrentPlayer(name: string) {
       this.db.put('currentPlayer', 'name', name);
-      this.sendMessageRaw({color: 'black', tc: curTime() + ' ' + name + ' ist am Zug', tr: ''});
+      this.sendGlobalNotification(name + ' ist am Zug');
     }
   
     sendMessage(msg: string) {
       this.sendMessageRaw(this.myself.makeColored(curTime() + ' ' + this.myself.name, msg));
+    }
+
+    sendGlobalNotification(msg: string) {
+      this.sendMessageRaw({color: 'black', tc: curTime() + ' ' + name + ' ist am Zug', tr: ''});
     }
   
     sendMessageRaw(msg: MsgData) {
@@ -794,6 +827,15 @@ class CardType {
           }
         });
       }
+    }
+
+    endGameForPlayer(nameOrId: string) {
+      this.allActivePlayers.forEach(p => {
+        if (p.id === nameOrId || p.name === nameOrId) {
+          this.db.put('endedPlayers', p.id, true);
+        }
+      });
+      this.sendGlobalNotification(nameOrId + ' verlässt das Spiel');
     }
   }
 

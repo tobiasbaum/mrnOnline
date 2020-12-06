@@ -53,6 +53,10 @@ export class OtherPlayerComponent implements OnInit {
     return this.me.graveyard;
   }
 
+  get isInGame(): boolean {
+    return this.me.isInGame;
+  }
+
   isCurrentPlayer(): boolean {
     return this.field.gameField.currentPlayerName === this.me.name;
   }

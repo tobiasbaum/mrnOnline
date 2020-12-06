@@ -111,4 +111,11 @@ get otherPlayers(): OtherPlayer[] {
   return this.fieldService.gameField.others;
 }
 
+endGameForPlayer() {
+  let nameOrId = prompt('Spieler', this.fieldService.gameField.myself.name);
+  if (nameOrId) {
+    this.fieldService.gameField.endGameForPlayer(nameOrId);
+  }
+}
+
 }
