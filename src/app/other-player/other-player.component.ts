@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, NgZone, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { CardBag, CardStash, OtherPlayer } from '../domain/game-field';
+import { CardCollection, CardStash, OtherPlayer } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 
 @Component({
@@ -45,7 +45,7 @@ export class OtherPlayerComponent implements OnInit {
     return this.me.librarySize;
   }
 
-  get table(): CardBag {
+  get table(): CardCollection {
     return this.me.table;
   }
 
