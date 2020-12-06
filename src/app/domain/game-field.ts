@@ -606,6 +606,16 @@ class CardType {
     private cachedTable: CardStash = new CardStash([]);;
 
     constructor(public id: string, public db: DistributedDatabaseSystem) {
+      this.db.on(['add', 'update'], 'playerData', (playerId: string, name: any) => {
+        if (playerId === this.id) {
+          this.notifyUpdate();
+        }
+      });
+      this.db.on(['add', 'update'], 'lifes', (playerId: string, cnt: any) => {
+        if (playerId === this.id) {
+          this.notifyUpdate();
+        }
+      });
       db.on(['add', 'update'], 'graveyards', (playerId: string, content: DtoCard[]) => {
         if (playerId === this.id) {
           this.cachedGraveyard = this.map(content);
@@ -689,11 +699,6 @@ class CardType {
     constructor(peer: any, ownId: string, ownName: string, deck: Card[]) {
       this.others = [];
       this.db = new DistributedDatabaseSystem(peer, ownId);
-      this.db.on('add', 'playerData', (id: string, name: any) => this.updatePlayer(id));
-      this.db.on('update', 'playerData', (id: string, name: any) => this.updatePlayer(id));
-      this.db.on('update', 'lifes', (id: string, cnt: any) => this.updatePlayer(id));
-      this.db.on('update', 'graveyards', (id: string, cards: any) => this.updatePlayer(id));
-      this.db.on('update', 'tables', (id: string, cards: any) => this.updatePlayer(id));
   
       this.myself = new SelfPlayer(ownId, ownName, deck, this.db);
       this.db.put('playerData', ownId, {
@@ -715,13 +720,11 @@ class CardType {
   connectToOtherPlayer(id: string) {
       this.db.connectToNode(id);
       this.others.push(new OtherPlayer(id, this.db));
-      //this.updatePlayers();
     }
   
     addOtherPlayer(conn: any) {
       this.db.addNode(conn);
       this.others.push(new OtherPlayer(conn.peer, this.db));
-      //this.updatePlayers();
     }
 
     get currentPlayerName(): string|undefined {
@@ -762,11 +765,6 @@ class CardType {
     setCurrentPlayer(name: string) {
       this.db.put('currentPlayer', 'name', name);
       this.sendMessageRaw({color: 'black', tc: curTime() + ' ' + name + ' ist am Zug', tr: ''});
-    }
-  
-    updatePlayer(id: string) {
-      this.ensurePlayersSorted();
-      this.others.find(p => p.id === id)?.notifyUpdate();
     }
   
     sendMessage(msg: string) {

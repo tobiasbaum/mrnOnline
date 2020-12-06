@@ -104,7 +104,7 @@ export class DistributedDatabaseSystem {
     let eventType = this.databases[d.db].put(d.t, d.id, d.dta);
     console.log('type: ' + eventType);
     if (this.callbacks[eventType][d.db]) {
-      this.callbacks[eventType][d.db](d.id, d.dta);
+      this.callbacks[eventType][d.db].forEach((f: Function) => f(d.id, d.dta));
     }
     if (eventType != 'ignore') {
       this.forwardToFurtherReceivers(d);
@@ -184,7 +184,11 @@ export class DistributedDatabaseSystem {
     if (typeof eventType !== 'string') {
       eventType.forEach(x => this.on(x, database, action));
     } else {
-      this.callbacks[eventType][database] = action;
+      if (this.callbacks[eventType][database]) {
+        this.callbacks[eventType][database].push(action);
+      } else {
+        this.callbacks[eventType][database] = [action];
+      }
     }
   }
 

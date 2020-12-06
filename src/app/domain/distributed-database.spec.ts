@@ -99,6 +99,27 @@ describe('DistributedDatabaseSystem', () => {
         expect(dbs.get('testdb', 'y')).toBeUndefined();
     });
 
+    it('notifies multiple listeners', () => {
+        let dbs = createDBS('user1');
+        let log = '';
+        dbs.on('add', 'db', (id: string, dta: any) => log += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs.on('update', 'db', (id: string, dta: any) => log += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs.on(['add', 'update'], 'db', (id: string, dta: any) => log += 'au ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs.put('db', 'x', 1);
+        dbs.put('db', 'x', 2);
+        dbs.put('db', 'x', 3);
+        stubNetwork.exchangeMessages();
+        expect(dbs.get('db', 'x')).toEqual(3);
+
+        expect(log).toEqual(
+            'add x,1\n' +
+            'au x,1\n' +
+            'update x,2\n' +
+            'au x,2\n' +
+            'update x,3\n' +
+            'au x,3\n');
+    });
+
     it('keeps two peers in sync', () => {
         let dbs1 = createDBS('user1');
         let dbs2 = createDBS('user2');

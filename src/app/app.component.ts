@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 import { GameField, Card, CardType, OtherPlayer } from './domain/game-field';
 import { GameFieldStoreService } from './game-field-store.service';
@@ -23,7 +23,11 @@ export class AppComponent {
 
   private destroy = new Subject();
 
-  constructor(public fieldService: GameFieldStoreService, private http: HttpClient, cdr: ChangeDetectorRef) {
+  constructor(
+      public fieldService: GameFieldStoreService, 
+      private http: HttpClient, 
+      private ngz: NgZone, 
+      cdr: ChangeDetectorRef) {
     fieldService.subscribe(
       f => f.registerPlayerChangeHandler(() => {cdr.markForCheck()}),
       this.destroy);
@@ -42,11 +46,11 @@ export class AppComponent {
     });
     peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
-        this.loadDeckAndStart(peer, id);
+        this.ngz.run(() => this.loadDeckAndStart(peer, id));
     });
     peer.on('connection', (conn: any) => {
         //alert('Got connection ' + conn);
-        this.fieldService.gameField.addOtherPlayer(conn);
+        this.ngz.run(() => this.fieldService.gameField.addOtherPlayer(conn));
     });
 }
 
