@@ -115,4 +115,76 @@ describe('DistributedDatabaseSystem', () => {
         expect(dbs2.get('testdb', 'y')).toEqual(['V', 'W']);
     });
 
+    it('keeps three peers in sync', () => {
+        let dbs1 = createDBS('user1');
+        let log1 = '';
+        dbs1.on('add', 'testdb', (id: string, dta: any) => log1 += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs1.on('update', 'testdb', (id: string, dta: any) => log1 += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
+        stubNetwork.exchangeMessages();
+        let dbs2 = createDBS('user2');
+        let log2 = '';
+        dbs2.on(['add', 'update'], 'testdb', (id: string, dta: any) => log2 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs2.connectToNode('user1');
+        stubNetwork.exchangeMessages();
+        let dbs3 = createDBS('user3');
+        let log3 = '';
+        dbs3.on(['add', 'update'], 'testdb', (id: string, dta: any) => log3 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs3.connectToNode('user1');
+        stubNetwork.exchangeMessages();
+        dbs1.put('testdb', 'x', ['a', 'b', 'c']);
+        stubNetwork.exchangeMessages();
+        expect(dbs1.get('testdb', 'x')).toEqual(['a', 'b', 'c']);
+        expect(dbs2.get('testdb', 'x')).toEqual(['a', 'b', 'c']);
+        expect(dbs3.get('testdb', 'x')).toEqual(['a', 'b', 'c']);
+        dbs2.put('testdb', 'y', ['V', 'W']);
+        stubNetwork.exchangeMessages();
+        expect(dbs1.get('testdb', 'y')).toEqual(['V', 'W']);
+        expect(dbs2.get('testdb', 'y')).toEqual(['V', 'W']);
+        expect(dbs3.get('testdb', 'y')).toEqual(['V', 'W']);
+        dbs3.put('testdb', 'z', []);
+        stubNetwork.exchangeMessages();
+        expect(dbs1.get('testdb', 'z')).toEqual([]);
+        expect(dbs2.get('testdb', 'z')).toEqual([]);
+        expect(dbs3.get('testdb', 'z')).toEqual([]);
+        dbs1.put('testdb', 'x', ['a', 'b', 'c', 'd']);
+        stubNetwork.exchangeMessages();
+        expect(dbs1.get('testdb', 'x')).toEqual(['a', 'b', 'c', 'd']);
+        expect(dbs2.get('testdb', 'x')).toEqual(['a', 'b', 'c', 'd']);
+        expect(dbs3.get('testdb', 'x')).toEqual(['a', 'b', 'c', 'd']);
+        dbs2.put('testdb', 'y', ['Q', 'V', 'W']);
+        stubNetwork.exchangeMessages();
+        expect(dbs1.get('testdb', 'y')).toEqual(['Q', 'V', 'W']);
+        expect(dbs2.get('testdb', 'y')).toEqual(['Q', 'V', 'W']);
+        expect(dbs3.get('testdb', 'y')).toEqual(['Q', 'V', 'W']);
+        dbs3.put('testdb', 'z', ['1']);
+        stubNetwork.exchangeMessages();
+        expect(dbs1.get('testdb', 'z')).toEqual(['1']);
+        expect(dbs2.get('testdb', 'z')).toEqual(['1']);
+        expect(dbs3.get('testdb', 'z')).toEqual(['1']);
+
+        expect(log1).toEqual(
+            'add x,["a","b","c"]\n' +
+            'add y,["V","W"]\n' +
+            'add z,[]\n' +
+            'update x,["a","b","c","d"]\n' +
+            'update y,["Q","V","W"]\n' +
+            'update z,["1"]\n');
+
+        expect(log2).toEqual(
+            'add/update x,["a","b","c"]\n' +
+            'add/update y,["V","W"]\n' +
+            'add/update z,[]\n' +
+            'add/update x,["a","b","c","d"]\n' +
+            'add/update y,["Q","V","W"]\n' +
+            'add/update z,["1"]\n');
+
+        expect(log3).toEqual(
+            'add/update x,["a","b","c"]\n' +
+            'add/update y,["V","W"]\n' +
+            'add/update z,[]\n' +
+            'add/update x,["a","b","c","d"]\n' +
+            'add/update y,["Q","V","W"]\n' +
+            'add/update z,["1"]\n');
+    });
+
 });
