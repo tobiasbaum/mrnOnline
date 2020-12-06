@@ -75,7 +75,7 @@ mapDecksAndCards(data: any, peerId: string): Card[] {
   let cards: any = {};
   for (let i = 0; i < data.cards.length; i++) {
     let card = data.cards[i];
-    cards[card.name] = new CardType(card.name, card.img);
+    cards[card.name] = new CardType(card.name, card.type, card.img);
   }
   let d: string[] = data.deck;
   let deck = [];

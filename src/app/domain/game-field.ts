@@ -7,7 +7,7 @@ class CardType {
     public readonly img: string;
     public readonly token: boolean;
 
-    constructor(public name: string, img: string | undefined, token?: boolean) {
+    constructor(public name: string, public type: string, img: string | undefined, token?: boolean) {
       if (token) {
         this.token = true;
       } else {
@@ -27,13 +27,15 @@ class CardType {
     toDto() {
       return {
         name: this.name,
-        img: this.img
+        type: this.type,
+        img: this.img,
+        token: this.token
       };
     }
   }
   
   function cardTypeFromDto(dto: any) {
-    return new CardType(dto.name, dto.img);
+    return new CardType(dto.name, dto.type, dto.img, dto.token);
   }
   
   var cardCnt = 0;
@@ -263,11 +265,25 @@ class CardType {
     }
 
     add(card: Card): void {
+      //bei gleichnamiger Karte einsortieren, wenn vorhanden
       let idx = this.cards.findIndex(x => x.type.name === card.type.name);
-      if (idx < 0) {
-        this.cards.push(card);
-      } else {
+      if (idx >= 0) {
         this.cards.splice(idx, 0, card);
+        return;
+      }
+      //nach Grob-Typ sortieren
+      this.cards.push(card);
+      this.cards.sort((a: Card, b: Card) => this.typeGroup(a) - this.typeGroup(b));
+    }
+
+    private typeGroup(c: Card): number {
+      let t = c.type.type;
+      if (t.startsWith('Creature') || t.startsWith('Summon ')) {
+        return 1;
+      } else if (t.indexOf('Land') >= 0) {
+        return 0;
+      } else {
+        return 2;
       }
     }
   
@@ -614,7 +630,7 @@ class CardType {
     }
   
     createToken(name: string) {
-      let type = new CardType(name, undefined, true);
+      let type = new CardType(name, 'Creature - Token', undefined, true);
       let card = new Card(type, this.id);
       this.sendNotification('bringt Token ' + card.name + ' ins Spiel');
       this.addToTable(card);
