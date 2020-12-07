@@ -10,7 +10,6 @@ export class HoveredCardService {
   private store: Subject<CardType> = new Subject<CardType>();
 
   public setCard(c: CardType): void {
-    console.log('set hovered card: ' + c.name);
     this.store.next(c);
   }
 

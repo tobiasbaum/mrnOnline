@@ -45,7 +45,6 @@ export class CardComponent implements OnInit {
   }
 
   hover(c: Card) {
-    console.log('hover ' + c.name);
     this.hc.setCard(c.type);
   }
 

@@ -49,6 +49,14 @@ export class AppComponent {
     this.destroy.next();
   }
 
+  start() {
+    let name = this.formData.playerName;
+    if (name) {
+      localStorage.setItem('mrnUserName', name);
+      this.createPeer(name);
+    }
+  }
+  
   createPeer(name: string) {
     //var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
     var peer = new Peer(undefined, {});
@@ -58,28 +66,20 @@ export class AppComponent {
     });
     peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
-        this.ngz.run(() => this.loadDeckAndStart(peer, id));
+        this.ngz.run(() => this.loadDeckAndInitGame(peer, id));
     });
-}
+  }
 
-private loadDeckAndStart(peer: any, playerId: string) {
+private loadDeckAndInitGame(peer: any, playerId: string) {
   this.http.get(this.formData.deckUrl).subscribe((data: any) => {
-    let deck: Card[] = this.mapDecksAndCards(data, playerId);
+    let deck: Card[] = this.mapDecksAndCards(data);
     console.log('loaded deck with ' + deck.length + ' cards');
     this.fieldService.init(new GameField(peer, playerId, this.formData.playerName as string, deck));
     this.state = 'started';
   });
 }
 
-start() {
-  let name = this.formData.playerName;
-  if (name) {
-    localStorage.setItem('mrnUserName', name);
-    this.createPeer(name);
-  }
-}
-
-mapDecksAndCards(data: any, peerId: string): Card[] {
+mapDecksAndCards(data: any): Card[] {
   let cards: any = {};
   for (let i = 0; i < data.cards.length; i++) {
     let card = data.cards[i];
@@ -89,7 +89,7 @@ mapDecksAndCards(data: any, peerId: string): Card[] {
   let deck = [];
   for (let i = 0; i < d.length; i++) {
     let card = d[i];
-    deck.push(new Card(cards[card], peerId));
+    deck.push(new Card(cards[card], this.formData.playerName as string));
   }
   return deck;
 }

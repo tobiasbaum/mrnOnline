@@ -17,10 +17,6 @@ export class CardDetailsComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  ngAfterViewChecked() {
-    console.log('details view checked');
-  }
-
   public get current(): Observable<CardType> {
     return this.hc.current();
   }

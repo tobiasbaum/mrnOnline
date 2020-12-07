@@ -159,7 +159,7 @@ export class DistributedDatabaseSystem {
     this.put(listDb, this.ownName + this.time, data);
   }
 
-  put(database: string, id: string, data: any) {
+  put(database: string, id: string | number, data: any) {
     var packet = {
       src: this.ownName,
       t: this.time++,
@@ -174,7 +174,7 @@ export class DistributedDatabaseSystem {
     this.handleData(packet);
   }
 
-  get(database: string, id: string) {
+  get(database: string, id: string | number) {
     if (!this.databases[database]) {
       return undefined;
     }

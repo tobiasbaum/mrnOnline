@@ -4,59 +4,253 @@ import { DistributedDatabaseSystem } from './distributed-database';
 
 class CardType {
 
-    public readonly img: string;
-    public readonly token: boolean;
+  public readonly img: string;
+  public readonly token: boolean;
 
-    constructor(public name: string, public type: string, img: string | undefined, token?: boolean) {
-      if (token) {
-        this.token = true;
-      } else {
-        this.token = false;
+  constructor(public name: string, public type: string, img: string | undefined, token?: boolean) {
+    if (token) {
+      this.token = true;
+    } else {
+      this.token = false;
+    }
+    if (img) {
+      this.img = img;
+    } else {
+      this.img = 'data:image/svg+xml;base64,' + btoa(this.createSvg(name.replace(/[^a-zA-Z0-9 ]/, '')));
+    }
+  }
+
+  private createSvg(title: string): string {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 334"><rect x="5" y="5" width="230" height="324" fill="gray" /><text x="20" y="35">' + title + '</text></svg>';
+  }
+
+  toDto(): CardTypeDto {
+    return {
+      name: this.name,
+      type: this.type,
+      img: this.img,
+      token: this.token
+    }
+  }
+
+}
+
+interface CardTypeDto {
+  name: string;
+  type: string;
+  img: string;
+  token: boolean | undefined;
+}
+
+function typeFromDto(dto: CardTypeDto) {
+  return new CardType(dto.name, dto.type, dto.img, dto.token);
+}
+
+var cardCnt = 0;
+
+enum LocationType {
+  LIBRARY_OR_HAND,
+  TABLE,
+  ON_OTHER_CARD,
+  GRAVEYARD,
+  EXILE,
+  VANISHED
+}
+
+enum CardState {
+  Normal,
+  Blocker,
+  Tapped
+}
+
+interface ImmutableCardData {
+  type: CardTypeDto;
+  controller: string;
+}
+
+interface MutableCardData {
+  state: CardState;
+  locationPlayer: string;
+  locationType: LocationType;
+  locationData: number | undefined;
+  counter: string | undefined;
+}
+
+class CachedCardsForPlayer {
+  public library = new CardStash([]);
+  public hand = new CardBag([]);
+  public table = new CardBag([]);
+  public graveyard = new CardStash([]);
+  public exile = new CardBag([]);
+
+  graveyardOrder = new Map<number, number | undefined>();
+
+  public sortStashes(localLibrary: LocalLibrary) {
+    console.log('library before sort: ' + this.library.cards.map(c => c.name));
+    this.library.sort(localLibrary.createOrderMap());
+    console.log('library after sort: ' + this.library.cards.map(c => c.name));
+    this.graveyard.sort(this.graveyardOrder);
+  }
+}
+
+class LocalLibrary {
+  private content: number[] = [];
+
+  constructor(deck: Card[]) {
+    this.content = deck.map(c => c.id);
+  }
+
+  contains(cardId: number): boolean {
+    return this.content.includes(cardId);
+  }
+
+  shuffle() {
+    var currentIndex = this.content.length;
+    var temporaryValue;
+    var randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      // And swap it with the current element.
+      temporaryValue = this.content[currentIndex];
+      this.content[currentIndex] = this.content[randomIndex];
+      this.content[randomIndex] = temporaryValue;
+    }
+  }
+
+  createOrderMap(): Map<number, number | undefined> {
+    let ret = new Map<number, number>();
+    for (let i = 0; i < this.content.length; i++) {
+      ret.set(this.content[i], i);
+    }
+    return ret;
+  }
+
+  draw(): number | undefined {
+    return this.content.shift();
+  }
+}
+
+class CachedCards {
+  private cardsPerPlayer: Map<string, CachedCardsForPlayer> = new Map();
+  private mappedCards: Map<number, Card> = new Map();
+
+  constructor(private db: DistributedDatabaseSystem, private library: LocalLibrary, knownCards: number[]) {
+    knownCards.forEach((cardId: number) => {
+      this.getOrCreateCard(cardId);
+    });
+    this.cardsPerPlayer.forEach(p => p.sortStashes(library));
+  }
+
+  public getOrCreateCard(cardId: number): Card {
+    if (!this.mappedCards.has(cardId)) {
+      this.mapCard(cardId, this.db.get('cardData', cardId));
+    }
+    return this.mappedCards.get(cardId) as Card;
+  }
+
+  private mapCard(cardId: number, data: MutableCardData | undefined) {
+    let icd : ImmutableCardData = this.db.get('cards', cardId);
+    if (!data) {
+      data = {
+        state: CardState.Normal,
+        locationType: LocationType.LIBRARY_OR_HAND,
+        locationPlayer: icd.controller,
+        locationData: undefined,
+        counter: undefined
       }
-      if (img) {
-        this.img = img;
-      } else {
-        this.img = 'data:image/svg+xml;base64,' + btoa(this.createSvg(name.replace(/[^a-zA-Z0-9 ]/, '')));
-      }
     }
+    let card = new Card(typeFromDto(icd.type), icd.controller, cardId, data.state, [], data.counter);
+    this.mappedCards.set(cardId, card);
+    let player = this.getOrCreatePlayer(data.locationPlayer);
+    switch (data.locationType) {
+      case LocationType.LIBRARY_OR_HAND:
+        //die Zuordnung Hand vs Bibliothek funktioniert nur für den eigenen Spieler, aber das ist OK
+        if (this.library.contains(cardId)) {
+          player.library.add(card);
+        } else {
+          player.hand.add(card);
+        }
+        break;
+      case LocationType.TABLE:
+        player.table.add(card);
+        break;
+      case LocationType.GRAVEYARD:
+        player.graveyard.add(card);
+        player.graveyardOrder.set(card.id, data.locationData);
+        break;
+      case LocationType.EXILE:
+        player.exile.add(card);
+        break;
+      case LocationType.ON_OTHER_CARD:
+        let otherCard = this.getOrCreateCard(data.locationData as number);
+        otherCard?.modifyWith(card);
+        break;
+      case LocationType.VANISHED:
+        break;
+    }
+  }
 
-    private createSvg(title: string): string {
-      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 334"><rect x="5" y="5" width="230" height="324" fill="gray" /><text x="20" y="35">' + title + '</text></svg>';
+  public getOrCreatePlayer(playerName: string): CachedCardsForPlayer {
+    if (!this.cardsPerPlayer.has(playerName)) {
+      this.cardsPerPlayer.set(playerName, new CachedCardsForPlayer());
     }
-  
-    toDto() {
-      return {
-        name: this.name,
-        type: this.type,
-        img: this.img,
-        token: this.token
-      };
-    }
+    return this.cardsPerPlayer.get(playerName) as CachedCardsForPlayer;
   }
-  
-  function cardTypeFromDto(dto: any) {
-    return new CardType(dto.name, dto.type, dto.img, dto.token);
-  }
-  
-  var cardCnt = 0;
+}
 
-  enum CardState {
-    Normal,
-    Blocker,
-    Tapped
+class CardCache {
+  private knownCards: number[];
+  private dirty: boolean;
+  private content: CachedCards | undefined;
+
+  constructor(deck: Card[], private db: DistributedDatabaseSystem, private library: LocalLibrary) {
+    deck.forEach(c => c.writeCardStats(db));
+    this.knownCards = deck.map(c => c.id);
+    this.dirty = true;
+    db.on('add', 'cardData', (cardId: number) => {
+      this.ensureKnown(cardId);
+      this.setDirty();
+    });
+    db.on('update', 'cardData', () => this.setDirty());
   }
-  
+
+  private ensureKnown(cardId: number) {
+    if (!this.knownCards.includes(cardId)) {
+      this.knownCards.push(cardId);
+    }
+  }
+
+  public get(): CachedCards {
+    if (this.dirty) {
+      this.content = new CachedCards(this.db, this.library, this.knownCards);
+      this.dirty = false;
+    }
+    return this.content as CachedCards;
+  }
+
+  public setDirty() {
+    this.dirty = true;
+  }
+
+}
+
   class Card {
     public type: CardType;
-    public controllerId: string;
+    public controllerName: string;
     public id: number;
     public state: CardState = CardState.Normal;
     private mods: Card[];
     public counter: string | undefined;
   
-    constructor(type: CardType, controllerId: string, id?: number, tapped?: boolean, mods?: Card[], counter?: string) {
+    constructor(type: CardType, controllerName: string, id?: number, tapped?: CardState, mods?: Card[], counter?: string) {
       this.type = type;
-      this.controllerId = controllerId;
+      this.controllerName = controllerName;
       if (typeof id === 'undefined') {
         this.id = Math.floor(Math.random() * 10000) * 1000 + cardCnt++;
       } else {
@@ -65,7 +259,7 @@ class CardType {
       if (typeof tapped === 'undefined') {
         this.state = CardState.Normal;
       } else {
-        this.state = tapped ? CardState.Tapped : CardState.Normal;
+        this.state = tapped;
       }
       if (typeof mods === 'undefined') {
         this.mods = [];
@@ -87,28 +281,10 @@ class CardType {
       return this.state === CardState.Blocker;
     }
   
-    tap() {
-      this.state = CardState.Tapped;
-    }
-  
-    markAsBlocker() {
-      if (this.state === CardState.Normal) {
-        this.state = CardState.Blocker;
-      }
-    }
-  
-    untap() {
-      this.state = CardState.Normal;
-    }
-
     modifyWith(c: Card) {
       this.mods.push(c);
     }
   
-    clearModifiers() {
-      this.mods = [];
-    }
-
     isModifiedBy(cardId: number): boolean {
       for (let i = 0; i < this.mods.length; i++) {
         if (this.mods[i].id === cardId) {
@@ -116,17 +292,6 @@ class CardType {
         }
       }
       return false;
-    }
-
-    removeModifier(cardId: number): Card | null {
-      for (let i = 0; i < this.mods.length; i++) {
-        if (this.mods[i].id === cardId) {
-          let card = this.mods[i];
-          this.mods.splice(i, 1);
-          return card;
-        }
-      }
-      return null;
     }
 
     get name() {
@@ -148,36 +313,16 @@ class CardType {
     get modifiers(): Card[] {
       return this.mods;
     }
-  
-    toDto(): DtoCard {
-      return {
-        id: this.id,
-        cntr: this.controllerId,
+
+    writeCardStats(db: DistributedDatabaseSystem) {
+      db.put('cards', this.id, {
         type: this.type.toDto(),
-        tapped: this.tapped,
-        mods: this.mods.map(x => x.toDto()),
-        counter: this.counter
-      }
+        controller: this.controllerName
+      });
     }
-  }
-
-  interface DtoCardType {
-
-  }
-
-  interface DtoCard {
-      type: DtoCardType;
-      cntr: string;
-      id: number;
-      tapped: boolean;
-      mods: DtoCard[];
-      counter: string | undefined;
-  }
   
-  function cardFromDto(dto: DtoCard): Card {
-    return new Card(cardTypeFromDto(dto.type), dto.cntr, dto.id, dto.tapped, dto.mods.map(cardFromDto), dto.counter);
   }
-  
+
   export abstract class CardCollection implements Iterable<Card> {
     constructor(public cards: Card[]) {
     }
@@ -206,24 +351,10 @@ class CardType {
       return null;
     }
   
-    remove(cardId: number) {
-      for (let i = 0; i < this.cards.length; i++) {
-        if (this.cards[i].id === cardId) {
-          let card = this.cards[i];
-          this.cards.splice(i, 1);
-          return card;
-        }
-      }
-      return null;
-    }
-  
     get size() {
       return this.cards.length;
     }
   
-    toDto() {
-      return this.cards.map(x => x.toDto());
-    }
   }
   
   export class CardStash extends CardCollection {
@@ -232,30 +363,15 @@ class CardType {
     }
   
     add(card: Card): void {
-      this.cards.unshift(card);
+      this.cards.push(card);
     }
   
-    shuffle() {
-      var currentIndex = this.cards.length;
-      var temporaryValue;
-      var randomIndex;
-  
-      // While there remain elements to shuffle...
-      while (0 !== currentIndex) {
-  
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-  
-        // And swap it with the current element.
-        temporaryValue = this.cards[currentIndex];
-        this.cards[currentIndex] = this.cards[randomIndex];
-        this.cards[randomIndex] = temporaryValue;
-      }
-    }
-  
-    draw() {
-      return this.cards.shift();
+    sort(cardIdToOrderMap: Map<number, number | undefined>) {
+      this.cards.sort((c1, c2) => {
+        let i1 = cardIdToOrderMap.get(c1.id) || 0;
+        let i2 = cardIdToOrderMap.get(c2.id) || 0;
+        return i1 - i2;
+      })
     }
   }
   
@@ -292,55 +408,65 @@ class CardType {
   class SelfPlayer implements PlayerData {
       public readonly id: string;
       public readonly name: string;
-      public readonly library: CardStash;
-      public readonly hand: CardBag;
-      public readonly table: CardBag;
-      public readonly graveyard: CardStash;
-      public readonly exile: CardBag;
+      private cardCache: CardCache;
+      private localLibrary: LocalLibrary;
       public lifes: number;
       public readonly color: string;
       public readonly db: DistributedDatabaseSystem;
       public readonly orderNumber: number;
+      private graveyardCounter: number = 0;
       private readonly subject: Subject<void> = new Subject();
 
-    constructor(id: string, name: string, deck: Card[], db: DistributedDatabaseSystem) {
+    constructor(id: string, name: string, db: DistributedDatabaseSystem, cardCache: CardCache, localLibrary: LocalLibrary) {
       this.id = id;
       this.name = name;
       this.db = db;
-      this.library = new CardStash(deck);
-      this.library.shuffle();
-      this.db.put('librarySizes', this.id, this.library.size);
-      this.hand = new CardBag([]);
-      this.table = new CardBag([]);
-      this.graveyard = new CardStash([]);
-      this.db.put('graveyards', this.id, this.graveyard.toDto());
-      this.exile = new CardBag([]);
-      this.db.put('exiles', this.id, this.exile.toDto());
+      this.cardCache = cardCache;
+      this.localLibrary = localLibrary;
+      this.db.put('librarySizes', this.name, this.library.size);
       this.lifes = 20;
-      this.db.put('lifes', this.id, this.lifes);
+      this.db.put('lifes', this.name, this.lifes);
       let h = Math.floor(Math.random() * 72) * 5;
       let s = 85 + Math.floor(Math.random() * 10);
       let l = 35 + Math.floor(Math.random() * 10);
       this.color = 'hsl(' + h + ',' + s + '%,' + l + '%)';
       this.orderNumber = Math.random();
 
-      this.db.on(['add', 'update'], 'endedPlayers', (id: string, dta: boolean) => { 
+      this.db.on(['add', 'update'], 'endedPlayers', (name: string, dta: boolean) => { 
         if (dta) {
-          this.handlePlayerEnd(id);
+          this.handlePlayerEnd(name);
         }
       });
-      this.db.on('receiveCommand', 'putToGraveyard', (cardDto: DtoCard) => this.addToGraveyard(cardFromDto(cardDto)));
-      this.db.on('receiveCommand', 'modifyCard', (x: any) => this.modifyWithOthersCard(x.tgt, cardFromDto(x.card)));
     }
 
-    private handlePlayerEnd(playerId: string) {
+    public get library(): CardStash {
+      return this.cardCache.get().getOrCreatePlayer(this.name).library;
+    }
+
+    public get hand(): CardBag {
+      return this.cardCache.get().getOrCreatePlayer(this.name).hand;
+    }
+
+    public get table(): CardBag {
+      return this.cardCache.get().getOrCreatePlayer(this.name).table;
+    }
+
+    public get graveyard(): CardStash {
+      return this.cardCache.get().getOrCreatePlayer(this.name).graveyard;
+    }
+
+    public get exile(): CardBag {
+      return this.cardCache.get().getOrCreatePlayer(this.name).exile;
+    }
+
+    private handlePlayerEnd(playerName: string) {
       let allCardsOfPlayer: Card[] = [];
       this.table.cards.forEach((c: Card) => {
-        if (c.controllerId === playerId) {
+        if (c.controllerName === playerName) {
           allCardsOfPlayer.push(c);
         }
         c.modifiers.forEach((m: Card) => {
-          if (m.controllerId === playerId) {
+          if (m.controllerName === playerName) {
             allCardsOfPlayer.push(m);
           }
         });
@@ -362,7 +488,7 @@ class CardType {
     }
 
     get isInGame(): boolean {
-      return !this.db.get('endedPlayers', this.id);
+      return !this.db.get('endedPlayers', this.name);
     }
   
     untapAll() {
@@ -374,36 +500,44 @@ class CardType {
     }
   
     drawCard(cardId?: number | undefined) {
-      let c;
-      if (cardId) {
-        let coll = this.getContainingCollection(cardId);
-        c = this.removeFromCollection(coll, cardId);  
-      } else {
-        c = this.library.draw();
+      if (!cardId) {
+        cardId = this.localLibrary.draw();
       }
-      this.db.put('librarySizes', this.id, this.library.size);
-      if (!c) {
+      if (!cardId) {
         this.sendNotification('kann nicht ziehen');
         return;
       }
+      let c = this.cardCache.get().getOrCreateCard(cardId);
       this.addToHand(c);
+      this.db.put('librarySizes', this.name, this.library.size);
       this.sendNotification('zieht eine Karte');
       this.subject.next();
     }
 
     shuffleLibrary() {
       this.sendNotification('mischt die Bibliothek');
-      this.library.shuffle();
+      this.localLibrary.shuffle();
+      this.cardCache.setDirty();
     }
 
     private addToHand(c: Card) {
-      this.hand.add(c);
-      this.db.put('handSizes', this.id, this.hand.size);
+      this.writeCardData(c.id, {
+        state: CardState.Normal,
+        locationType: LocationType.LIBRARY_OR_HAND,
+        locationPlayer: this.name,
+        locationData: undefined,
+        counter: undefined
+      });
+      this.db.put('handSizes', this.name, this.hand.size);
+    }
+
+    private writeCardData(cardId: number, mcd: MutableCardData) {
+      this.db.put('cardData', cardId, mcd);
     }
   
     changeLifeCount(diff: number) {
       this.lifes += diff;
-      this.db.put('lifes', this.id, this.lifes);
+      this.db.put('lifes', this.name, this.lifes);
       if (diff > 0) {
         this.sendNotification('erhöht Lebenspunkte um ' + diff + ' auf ' + this.lifes);
       } else {
@@ -413,216 +547,168 @@ class CardType {
     }
   
     putToGraveyard(cardId: number) {
-      let coll = this.getContainingCollection(cardId);
-      let card = this.removeFromCollection(coll, cardId);
-      this.addToGraveyard(card);
+      this.addToGraveyard(this.cardCache.get().getOrCreateCard(cardId));
       this.subject.next();
     }
 
     private addToGraveyard(card: Card) {
+      card.modifiers.forEach(m => this.addToGraveyard(m));
+
+      this.writeCardData(card.id, {
+        state: CardState.Normal,
+        locationType: card.type.token ? LocationType.VANISHED : LocationType.GRAVEYARD,
+        locationPlayer: card.controllerName,
+        locationData: this.graveyardCounter--,
+        counter: undefined
+      });
       if (card.type.token) {
         this.sendNotification('Token ' + card.name + ' verschwindet');
-        return;
-      }
-      this.clearCardState(card);
-      if (this.id === card.controllerId) {
-        this.graveyard.add(card);
-        this.db.put('graveyards', this.id, this.graveyard.toDto());  
-        this.sendNotification('legt ' + card.name + ' auf Friedhof');
       } else {
-        this.db.sendCommandTo(card.controllerId, 'putToGraveyard', card.toDto());
+        this.sendNotification('legt ' + card.name + ' auf Friedhof');
       }
     }
 
-    private clearCardState(card: Card) {
-      card.untap();
-      card.counter = undefined;
-    }
-  
     putToExile(cardId: number) {
-      let coll = this.getContainingCollection(cardId);
-      let card = this.removeFromCollection(coll, cardId);
+      let card = this.cardCache.get().getOrCreateCard(cardId);
+      this.writeCardData(card.id, {
+        state: CardState.Normal,
+        locationType: card.type.token ? LocationType.VANISHED : LocationType.EXILE,
+        locationPlayer: card.controllerName,
+        locationData: undefined,
+        counter: undefined
+      });
       if (card.type.token) {
         this.sendNotification('Token ' + card.name + ' verschwindet');
-        return;
+      } else {
+        this.sendNotification('nimmt ' + card.name + ' ganz aus dem Spiel');
       }
-      this.clearCardState(card);
-      this.exile.add(card);
-      this.db.put('exiles', this.id, this.exile.toDto());
-      this.sendNotification('nimmt ' + card.name + ' ganz aus dem Spiel');
       this.subject.next();
     }
   
     putIntoPlay(cardId: number) {
-      let coll = this.getContainingCollection(cardId);
-      let card = this.removeFromCollection(coll, cardId);
-      this.addToTable(card);
-      this.sendNotification('spielt ' + card.name + ' aus');
+      this.writeCardData(cardId, {
+        state: CardState.Normal,
+        locationType: LocationType.TABLE,
+        locationPlayer: this.name,
+        locationData: undefined,
+        counter: undefined
+      });
+      this.sendNotification('spielt ' + this.cardName(cardId) + ' aus');
       this.subject.next();
+    }
+
+    private cardName(cardId: number): string {
+      return this.db.get('cards', cardId).type.name;
     }
   
     putIntoPlayTapped(cardId: number) {
-      let collData = this.getContainingCollection(cardId);
-      let card = this.removeFromCollection(collData, cardId);
-      card.tap();
-      this.addToTable(card);
-      this.sendNotification('spielt ' + card.name + ' getappt aus');
+      this.writeCardData(cardId, {
+        state: CardState.Tapped,
+        locationType: LocationType.TABLE,
+        locationPlayer: this.name,
+        locationData: undefined,
+        counter: undefined
+      });
+      this.sendNotification('spielt ' + this.cardName(cardId) + ' getappt aus');
       this.subject.next();
     }
   
     putToHand(cardId: number) {
-      let coll = this.getContainingCollection(cardId);
-      let card = this.removeFromCollection(coll, cardId);
-      this.clearCardState(card);
-      this.addToHand(card);
-      this.sendNotification('nimmt ' + card.name + ' auf die Hand');
+      this.writeCardData(cardId, {
+        state: CardState.Normal,
+        locationType: LocationType.LIBRARY_OR_HAND,
+        locationPlayer: this.name,
+        locationData: undefined,
+        counter: undefined
+      });
+      this.sendNotification('nimmt ' + this.cardName(cardId) + ' auf die Hand');
       this.subject.next();
     }
   
     putOnLibrary(cardId: number) {
-      let coll = this.getContainingCollection(cardId);
-      let card = this.removeFromCollection(coll, cardId);
-      this.clearCardState(card);
-      this.library.add(card);
-      this.db.put('librarySizes', this.id, this.library.size);
-      if (coll?.countOnly) {
+      let oldLocation : LocationType = this.db.get('cardData', cardId).locationType;
+      if (oldLocation === LocationType.LIBRARY_OR_HAND) {
         this.sendNotification('legt eine Karte oben auf die Bibliothek');
       } else {
-        this.sendNotification('legt ' + card.name + ' oben auf die Bibliothek');
+        this.writeCardData(cardId, {
+          state: CardState.Normal,
+          locationType: LocationType.LIBRARY_OR_HAND,
+          locationPlayer: this.name,
+          locationData: undefined,
+          counter: undefined
+        });
+        this.sendNotification('legt ' + this.cardName(cardId) + ' oben auf die Bibliothek');
       }
+      this.db.put('librarySizes', this.name, this.library.size);
       this.subject.next();
     }
   
-    modifyOwnCard(modifierCardId: number, toModifyCardId: number) {
-      let toModify = this.table.getById(toModifyCardId);
-      if (!toModify) {
-        return;
-      }
-
-      let collData = this.getContainingCollection(modifierCardId);
-      let card = this.removeFromCollection(collData, modifierCardId);
-      this.applyModification(toModify, card);
+    modifyCard(modifierCardId: number, toModifyCardId: number) {
+      let cardData : MutableCardData = this.db.get('cardData', modifierCardId);
+      this.writeCardData(modifierCardId, {
+        state: CardState.Normal,
+        locationType: LocationType.ON_OTHER_CARD,
+        locationPlayer: cardData.locationPlayer,
+        locationData: toModifyCardId,
+        counter: cardData.counter
+      });
+      this.sendNotification('spielt ' + this.cardName(modifierCardId) + ' auf ' + this.cardName(toModifyCardId));
+      this.subject.next();
     }
 
     setCounter(cardId: number, value: string | undefined) {
-      let card = this.table.getById(cardId);
-      if (!card) {
-        return;
-      }
-      card.counter = value;
-      this.db.put('tables', this.id, this.table.toDto());
-      this.sendNotification('setzt Counter für ' + card.name + ' auf ' + value);
+      let cardData : MutableCardData = this.db.get('cardData', cardId);
+      this.writeCardData(cardId, {
+        state: cardData.state,
+        locationType: cardData.locationType,
+        locationPlayer: cardData.locationPlayer,
+        locationData: cardData.locationData,
+        counter: value
+      });
+      this.sendNotification('setzt Counter für ' + this.cardName(cardId) + ' auf ' + value);
       this.subject.next();
     }
 
-    modifyOtherPlayersCard(modifierCardId: number, toModifyCardId: number, otherPlayerId: string) {
-      let collData = this.getContainingCollection(modifierCardId);
-      let card = this.removeFromCollection(collData, modifierCardId);
-      this.db.sendCommandTo(otherPlayerId, 'modifyCard', {tgt: toModifyCardId, card: card.toDto()});
-    }
-
-    private modifyWithOthersCard(toModifyCardId: number, card: Card) {
-      let toModify = this.table.getById(toModifyCardId);
-      if (!toModify) {
-        return;
-      }
-
-      this.applyModification(toModify, card);
-    }
-
-    private applyModification(toModify: Card, card: Card) {
-      card.untap();
-      toModify.modifyWith(card);
-      this.db.put('tables', this.id, this.table.toDto());
-      this.sendNotification('spielt ' + card.name + ' auf ' + toModify.name);
-      this.subject.next();
-    }
-    
-    private removeFromCollection(collData: any, cardId: number) {
-      let card;
-      if (collData.nestedIn) {
-        card = collData.nestedIn.removeModifier(cardId);
-      } else {
-        card = collData.obj.remove(cardId);
-        this.dropModifiers(card);  
-      }
-      if (collData.countOnly) {
-        this.db.put(collData.name, this.id, collData.obj.size);
-      } else {
-        this.db.put(collData.name, this.id, collData.obj.toDto());
-      }
-      return card;
-    }
-
-    private dropModifiers(c: Card) {
-      c.modifiers.forEach(m => this.addToGraveyard(m));
-      c.clearModifiers();
-    }
-  
     addToTable(card: Card) {
       this.table.add(card);
-      this.db.put('tables', this.id, this.table.toDto());
+      card.writeCardStats(this.db);
+      this.writeCardData(card.id, {
+        state: CardState.Normal,
+        locationType: LocationType.TABLE,
+        locationPlayer: this.name,
+        locationData: undefined,
+        counter: card.counter
+      });
       this.subject.next();
     }
-  
-    getContainingCollection(cardId: number) {
-      if (this.hand.contains(cardId)) {
-        return {obj: this.hand, name: 'handSizes', countOnly: true};
-      }
-      if (this.table.contains(cardId)) {
-        return {obj: this.table, name: 'tables', countOnly: false};
-      }
-      if (this.graveyard.contains(cardId)) {
-        return {obj: this.graveyard, name: 'graveyards', countOnly: false};
-      }
-      if (this.library.contains(cardId)) {
-        return {obj: this.library, name: 'librarySizes', countOnly: true};
-      }
-      if (this.exile.contains(cardId)) {
-        return {obj: this.exile, name: 'exiles', countOnly: false};
-      }
-      let nested = this.table.cards.filter(c => c.isModifiedBy(cardId));
-      if (nested.length > 0) {
-        return {obj: this.table, name: 'tables', countOnly: false, nestedIn: nested[0]};
-      }
-      return null;
-    }
 
-    hasCard(cardId: number) {
-      return this.getContainingCollection(cardId) !== null;
-    }
-  
     tap(cardId: number) {
-      let card = this.table.getById(cardId);
-      if (!card) {
-        return;
-      }
-      card.tap();
-      this.db.put('tables', this.id, this.table.toDto());
-      this.sendNotification('tappt ' + card.name);
+      this.setCardState(cardId, CardState.Tapped);
+      this.sendNotification('tappt ' + this.cardName(cardId));
       this.subject.next();
     }
   
     markAsBlocker(cardId: number) {
-      let card = this.table.getById(cardId);
-      if (!card) {
-        return;
-      }
-      card.markAsBlocker();
-      this.db.put('tables', this.id, this.table.toDto());
-      this.sendNotification('markiert ' + card.name + ' als Blocker');
+      this.setCardState(cardId, CardState.Blocker);
+      this.sendNotification('markiert ' + this.cardName(cardId) + ' als Blocker');
       this.subject.next();
     }
   
     untap(cardId: number) {
-      let card = this.table.getById(cardId);
-      if (!card) {
-        return;
-      }
-      card.untap();
-      this.db.put('tables', this.id, this.table.toDto());
-      this.sendNotification('enttappt ' + card.name);
+      this.setCardState(cardId, CardState.Normal);
+      this.sendNotification('enttappt ' + this.cardName(cardId));
       this.subject.next();
+    }
+
+    private setCardState(cardId: number, state: CardState) {
+      let cardData : MutableCardData = this.db.get('cardData', cardId);
+      this.writeCardData(cardId, {
+        state: state,
+        locationType: cardData.locationType,
+        locationPlayer: cardData.locationPlayer,
+        locationData: cardData.locationData,
+        counter: cardData.counter
+      });
     }
   
     sendNotification(msg: string) {
@@ -631,7 +717,7 @@ class CardType {
   
     createToken(name: string) {
       let type = new CardType(name, 'Creature - Token', undefined, true);
-      let card = new Card(type, this.id);
+      let card = new Card(type, this.name);
       this.sendNotification('bringt Token ' + card.name + ' ins Spiel');
       this.addToTable(card);
     }
@@ -646,35 +732,21 @@ class CardType {
   
   export class OtherPlayer implements PlayerData {
     private subject: Subject<void> = new Subject();
-    private cachedGraveyard: CardStash = new CardStash([]);
-    private cachedTable: CardStash = new CardStash([]);;
 
-    constructor(public id: string, public db: DistributedDatabaseSystem) {
-      this.db.on(['add', 'update'], 'playerData', (playerId: string, name: any) => this.notifyIfRightId(playerId));
-      this.db.on(['add', 'update'], 'lifes', (playerId: string, cnt: any) => this.notifyIfRightId(playerId));
-      this.db.on(['add', 'update'], 'endedPlayers', (playerId: string, cnt: any) => this.notifyIfRightId(playerId));
-      db.on(['add', 'update'], 'graveyards', (playerId: string, content: DtoCard[]) => {
-        if (playerId === this.id) {
-          this.cachedGraveyard = this.map(content);
-          this.notifyUpdate();
-        }
-      });
-      db.on(['add', 'update'], 'tables', (playerId: string, content: DtoCard[]) => {
-        if (playerId === this.id) {
-          this.cachedTable = this.map(content);
-          this.notifyUpdate();
-        }
-      });
+    constructor(public name: string, public db: DistributedDatabaseSystem, private cardCache: CardCache) {
+      this.db.on(['add', 'update'], 'playerData', (playerName: string, name: any) => this.notifyIfRightName(playerName));
+      this.db.on(['add', 'update'], 'lifes', (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
+      this.db.on(['add', 'update'], 'endedPlayers', (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
     }
 
-    private notifyIfRightId(playerId: string) {
-      if (playerId === this.id) {
+    private notifyIfRightName(playerName: string) {
+      if (playerName === this.name) {
         this.notifyUpdate();
       }
     }
   
-    get name(): string {
-      return this.playerData?.name;
+    get id(): string {
+      return this.playerData?.id;
     }
 
     get orderNumber(): number {
@@ -686,48 +758,40 @@ class CardType {
     }
 
     private get playerData(): PlayerData {
-      return this.db.get('playerData', this.id);
+      return this.db.get('playerData', this.name);
     }
 
     get isInGame(): boolean {
-      return !this.db.get('endedPlayers', this.id);
+      return !this.db.get('endedPlayers', this.name);
     }
   
     get lifes(): number {
-      return this.db.get('lifes', this.id);
+      return this.db.get('lifes', this.name);
     }
   
     get handSize(): number {
-      return this.db.get('handSizes', this.id);
+      return this.db.get('handSizes', this.name);
     }
   
     get librarySize(): number {
-      return this.db.get('librarySizes', this.id);
+      return this.db.get('librarySizes', this.name);
     }
   
     get graveyard() {
-      return this.cachedGraveyard;
+      return this.cardCache.get().getOrCreatePlayer(this.name).graveyard;
     }
   
     get table() {
-      return this.cachedTable;
+      return this.cardCache.get().getOrCreatePlayer(this.name).table;
     }
   
-    private map(data: DtoCard[]): CardStash {
-      return new CardStash(data.map(x => cardFromDto(x)));
-    }
-
     notifyUpdate() {
-      console.log('notify update ' + this.id);
+      console.log('notify update ' + this.name);
       this.subject.next();
     }
   
     subscribeForUpdate(arg0: () => void, destroy: Subject<void>) {
       this.subject.pipe(takeUntil(destroy)).subscribe(arg0);
-    }
-
-    hasCard(cardId: number): boolean {
-      return this.table.contains(cardId);
     }
 
   }
@@ -740,21 +804,26 @@ class CardType {
   
   class GameField {
     private db: DistributedDatabaseSystem;
+    private cardCache: CardCache;
     public others: OtherPlayer[];
     public myself: SelfPlayer;
 
     constructor(peer: any, ownId: string, ownName: string, deck: Card[]) {
       this.others = [];
       this.db = new DistributedDatabaseSystem(peer, ownId);
-      this.db.on('add', 'playerData', (id: string, data: any) => {
-        if (id !== ownId) {
-          this.others.push(new OtherPlayer(id, this.db));
-          this.ensurePlayersSorted();
+      let localLibrary = new LocalLibrary(deck);
+      localLibrary.shuffle();
+      this.cardCache = new CardCache(deck, this.db, localLibrary);
+      this.db.on('add', 'playerData', (name: string, data: any) => {
+        if (name !== ownName) {
+          this.others.push(new OtherPlayer(name, this.db, this.cardCache));
         }
+        this.ensurePlayersSorted();
       });
   
-      this.myself = new SelfPlayer(ownId, ownName, deck, this.db);
-      this.db.put('playerData', ownId, {
+      this.myself = new SelfPlayer(ownId, ownName, this.db, this.cardCache, localLibrary);
+      this.db.put('playerData', ownName, {
+        id: ownId,
         name: ownName,
         color: this.myself.color,
         orderNumber: this.myself.orderNumber
@@ -834,21 +903,13 @@ class CardType {
        }
        
     modifyOtherCard(modifierCardId: number, targetId: number) {
-      if (this.myself.hasCard(targetId)) {
-        this.myself.modifyOwnCard(modifierCardId, targetId);
-      } else {
-        this.others.forEach(p => {
-          if (p.hasCard(targetId)) {
-            this.myself.modifyOtherPlayersCard(modifierCardId, targetId, p.id);
-          }
-        });
-      }
+      this.myself.modifyCard(modifierCardId, targetId);
     }
 
     endGameForPlayer(nameOrId: string) {
       this.allActivePlayers.forEach(p => {
         if (p.id === nameOrId || p.name === nameOrId) {
-          this.db.put('endedPlayers', p.id, true);
+          this.db.put('endedPlayers', p.name, true);
         }
       });
       this.sendGlobalNotification(nameOrId + ' verlässt das Spiel');
