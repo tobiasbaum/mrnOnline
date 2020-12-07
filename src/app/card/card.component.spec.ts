@@ -18,7 +18,7 @@ describe('CardComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CardComponent);
     component = fixture.componentInstance;
-    component.card = new Card(new CardType('Forest', 'img'), 'ctrl');
+    component.card = new Card(new CardType('Forest', 'Basic Land', 'img'), 'ctrl');
     fixture.detectChanges();
   });
 

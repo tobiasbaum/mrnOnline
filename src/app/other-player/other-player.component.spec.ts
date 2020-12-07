@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DistributedDatabaseSystem } from '../domain/distributed-database';
-import { GameField, OtherPlayer } from '../domain/game-field';
+import { CardCache, GameField, LocalLibrary, OtherPlayer } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 
 import { OtherPlayerComponent } from './other-player.component';
@@ -19,8 +19,13 @@ describe('OtherPlayerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(OtherPlayerComponent);
     let fieldService = TestBed.inject(GameFieldStoreService);
-    fieldService.init(new GameField(null, 'x', 'y', []));
-    let other = new OtherPlayer('willi', new DistributedDatabaseSystem(null, 'x'));
+    let peer = {
+      on: () => {}
+    };
+    fieldService.init(new GameField(peer, 'x', 'y', []));
+    let db = new DistributedDatabaseSystem(peer, 'x');
+    let cardCache = new CardCache([], db, new LocalLibrary([]));
+    let other = new OtherPlayer('willi', db, cardCache);
     component = fixture.componentInstance;
     component.me = other;
     fixture.detectChanges();

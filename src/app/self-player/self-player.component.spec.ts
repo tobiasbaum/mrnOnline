@@ -18,7 +18,10 @@ describe('SelfPlayerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SelfPlayerComponent);
     let fieldService = TestBed.inject(GameFieldStoreService);
-    fieldService.init(new GameField(null, 'x', 'y', []));
+    let peer = {
+      on: () => {}
+    };
+    fieldService.init(new GameField(peer, 'x', 'y', []));
     component = fixture.componentInstance;    
     fixture.detectChanges();
   });

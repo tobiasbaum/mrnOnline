@@ -83,7 +83,6 @@ describe('DistributedDatabaseSystem', () => {
     function createDBS(user: string): DistributedDatabaseSystem {
         let p = new StubPeer(user, stubNetwork);
         let dds = new DistributedDatabaseSystem(p, user);
-        p.on('connection', (conn: any) => dds.addNode(conn));
         return dds;
     }
     

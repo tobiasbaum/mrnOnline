@@ -93,7 +93,7 @@ class CachedCardsForPlayer {
   }
 }
 
-class LocalLibrary {
+export class LocalLibrary {
   private content: number[] = [];
 
   constructor(deck: Card[]) {
@@ -204,7 +204,7 @@ class CachedCards {
   }
 }
 
-class CardCache {
+export class CardCache {
   private knownCards: number[];
   private dirty: boolean;
   private content: CachedCards | undefined;
