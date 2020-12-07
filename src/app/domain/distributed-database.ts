@@ -61,7 +61,7 @@ export class DistributedDatabaseSystem {
     this.time = 0;
     this.otherNames = [];
     this.others = [];
-    this.callbacks = {add: {}, update: {}, ignore: {}, receiveCommand: {}};
+    this.callbacks = {add: {}, update: {}, ignore: {}};
     this.databases = {};
     peer.on('connection', (conn: any) => this.addNode(conn));
   }
@@ -96,14 +96,9 @@ export class DistributedDatabaseSystem {
 
   private handleData(d: any) {
     console.log(this.ownName + ' received: ' + JSON.stringify(d));
-    if (d.cmd) {
-      this.handleCommand(d);
-      return;
-    }
     this.time = Math.max(this.time, d.t);
     this.ensureDbExists(d.db);
     let eventType = this.databases[d.db].put(d.t, d.id, d.dta);
-    console.log('type: ' + eventType);
     if (this.callbacks[eventType][d.db]) {
       this.callbacks[eventType][d.db].forEach((f: Function) => f(d.id, d.dta));
     }
@@ -111,12 +106,6 @@ export class DistributedDatabaseSystem {
       this.forwardToFurtherReceivers(d);
     }
     this.establishConnectionToUnknownNodes(d);
-  }
-
-  private handleCommand(d: any) {
-    if (this.callbacks['receiveCommand'][d.cmd]) {
-      this.callbacks['receiveCommand'][d.cmd].forEach((f: Function) => f(d.dta));
-    }
   }
 
   private ensureDbExists(dbName: string) {
@@ -191,14 +180,6 @@ export class DistributedDatabaseSystem {
         this.callbacks[eventType][database] = [action];
       }
     }
-  }
-
-  sendCommandTo(receiverId: string, command: string, data: any) {
-    let idx = this.otherNames.indexOf(receiverId);
-    this.others[idx].send({
-      cmd: command,
-      dta: data
-    });
   }
 
 }
