@@ -63,6 +63,7 @@ export class DistributedDatabaseSystem {
     this.others = [];
     this.callbacks = {add: {}, update: {}, ignore: {}, receiveCommand: {}};
     this.databases = {};
+    peer.on('connection', (conn: any) => this.addNode(conn));
   }
 
   connectToNode(id: string) {
@@ -71,7 +72,7 @@ export class DistributedDatabaseSystem {
     this.addNode(conn);
   }
 
-  addNode(conn: any) {
+  private addNode(conn: any) {
     if (this.others.indexOf(conn) >= 0) {
       return;
     }

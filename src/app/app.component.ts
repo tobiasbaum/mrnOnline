@@ -41,7 +41,7 @@ export class AppComponent {
       private ngz: NgZone, 
       cdr: ChangeDetectorRef) {
     fieldService.subscribe(
-      f => f.registerPlayerChangeHandler(() => {cdr.markForCheck()}),
+      f => f.registerPlayerChangeHandler(() => ngz.run(() => cdr.markForCheck())),
       this.destroy);
   }
 
@@ -59,10 +59,6 @@ export class AppComponent {
     peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
         this.ngz.run(() => this.loadDeckAndStart(peer, id));
-    });
-    peer.on('connection', (conn: any) => {
-        //alert('Got connection ' + conn);
-        this.ngz.run(() => this.fieldService.gameField.addOtherPlayer(conn));
     });
 }
 

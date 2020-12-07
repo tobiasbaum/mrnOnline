@@ -742,10 +742,16 @@ class CardType {
     private db: DistributedDatabaseSystem;
     public others: OtherPlayer[];
     public myself: SelfPlayer;
-  
+
     constructor(peer: any, ownId: string, ownName: string, deck: Card[]) {
       this.others = [];
       this.db = new DistributedDatabaseSystem(peer, ownId);
+      this.db.on('add', 'playerData', (id: string, data: any) => {
+        if (id !== ownId) {
+          this.others.push(new OtherPlayer(id, this.db));
+          this.ensurePlayersSorted();
+        }
+      });
   
       this.myself = new SelfPlayer(ownId, ownName, deck, this.db);
       this.db.put('playerData', ownId, {
@@ -766,14 +772,8 @@ class CardType {
 
   connectToOtherPlayer(id: string) {
       this.db.connectToNode(id);
-      this.others.push(new OtherPlayer(id, this.db));
     }
   
-    addOtherPlayer(conn: any) {
-      this.db.addNode(conn);
-      this.others.push(new OtherPlayer(conn.peer, this.db));
-    }
-
     get currentPlayerName(): string|undefined {
       return this.db.get('currentPlayer', 'name');
     }
