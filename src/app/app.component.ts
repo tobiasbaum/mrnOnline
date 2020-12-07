@@ -115,6 +115,15 @@ dice(sides: number) {
   this.fieldService.gameField.myself.sendNotification('würfelt ' + n + ' (von ' + sides + ')');
 }
 
+randomOpponent() {
+  let opponents = this.fieldService.gameField.others.filter(p => p.isInGame);
+  if (opponents.length === 0) {
+    return;
+  }
+  let n = Math.floor(Math.random() * opponents.length);
+  this.fieldService.gameField.myself.sendNotification('würfelt Gegner ' + opponents[n].name);
+}
+
 isOwnTurn(): boolean {
   return this.fieldService.gameField.currentPlayerName === this.fieldService.gameField.myself.name;
 }
