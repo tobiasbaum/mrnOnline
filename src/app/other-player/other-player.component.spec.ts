@@ -23,9 +23,9 @@ describe('OtherPlayerComponent', () => {
     let peer = {
       on: () => {}
     };
-    fieldService.init(new GameField(peer, 'x', 'y', []));
+    fieldService.init(new GameField(peer, 'x', 'y', [], true));
     let db = new DistributedDatabaseSystem('dbs', peer, 'x', new StorageStub(), true);
-    let cardCache = new CardCache([], db, new LocalLibrary([]));
+    let cardCache = new CardCache([], db, new LocalLibrary('dbs', new StorageStub(), []));
     let other = new OtherPlayer('willi', db, cardCache);
     component = fixture.componentInstance;
     component.me = other;

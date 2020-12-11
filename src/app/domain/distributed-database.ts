@@ -6,6 +6,7 @@ class Database {
   constructor(private storage: Storage, private name: string) {
     let storedData = storage.getItem(name);
     if (storedData) {
+      console.log('loading db ' + name + ' from local storage');
       let obj = JSON.parse(storedData);
       this.times = obj.times;
       this.data = obj.data;
@@ -60,6 +61,10 @@ class Database {
       console.log('dump ' + JSON.stringify(packet) + ' to ' + conn.peer);
     });
   }
+
+  forEach(f: Function) {
+    Object.keys(this.times).forEach(id => f(id, this.data[id]));
+  }
 }
 
 export class DistributedDatabaseSystem {
@@ -86,6 +91,7 @@ export class DistributedDatabaseSystem {
     if (clean) {
       this.clear();
     } else {
+      this.loadStoredData();
       this.connectToKnownPeers();
     }
     peer.on('connection', (conn: any) => this.addNode(conn));
@@ -96,6 +102,11 @@ export class DistributedDatabaseSystem {
     knownDatabases.forEach(key => this.storage.removeItem(this.systemName + '.' + key));
     this.storage.removeItem(this.systemName + '.meta.knownDatabases');
     this.storage.removeItem(this.systemName + '.meta.knownPeerIds');
+  }
+
+  private loadStoredData() {
+    let databaseNames = this.getStoredDatabaseNames();
+    databaseNames.forEach(dbName => this.openDb(dbName));
   }
 
   private getStoredDatabaseNames(): string[] {
@@ -160,11 +171,15 @@ export class DistributedDatabaseSystem {
 
   private ensureDbExists(dbName: string) {
     if (!this.databases[dbName]) {
-      this.databases[dbName] = new Database(this.storage, this.systemName + '.' + dbName);
+      this.openDb(dbName);
       let knownDatabases = this.getStoredDatabaseNames();
       knownDatabases.push(dbName);
       this.storage.setItem(this.systemName + '.meta.knownDatabases', JSON.stringify(knownDatabases));
     }
+  }
+
+  private openDb(dbName: string) {
+    this.databases[dbName] = new Database(this.storage, this.systemName + '.' + dbName);
   }
 
   private forwardToFurtherReceivers(packet: any) {
@@ -223,14 +238,20 @@ export class DistributedDatabaseSystem {
     return this.databases[database].get(id);
   }
 
-  on(eventType: string | string[], database: string, action: Function) {
+  on(eventType: string | string[], database: string, provideInitialData: boolean, action: Function) {
     if (typeof eventType !== 'string') {
-      eventType.forEach(x => this.on(x, database, action));
+      eventType.forEach(x => this.on(x, database, provideInitialData, action));
     } else {
       if (this.callbacks[eventType][database]) {
         this.callbacks[eventType][database].push(action);
       } else {
         this.callbacks[eventType][database] = [action];
+      }
+      if (provideInitialData) {
+        let db: Database | undefined = this.databases[database];
+        if (db) {
+          db.forEach(action);
+        }
       }
     }
   }

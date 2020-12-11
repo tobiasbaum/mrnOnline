@@ -102,9 +102,9 @@ describe('DistributedDatabaseSystem', () => {
     it('notifies multiple listeners', () => {
         let dbs = createDBS('user1');
         let log = '';
-        dbs.on('add', 'db', (id: string, dta: any) => log += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
-        dbs.on('update', 'db', (id: string, dta: any) => log += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
-        dbs.on(['add', 'update'], 'db', (id: string, dta: any) => log += 'au ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs.on('add', 'db', false, (id: string, dta: any) => log += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs.on('update', 'db', false, (id: string, dta: any) => log += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs.on(['add', 'update'], 'db', false, (id: string, dta: any) => log += 'au ' + id + ',' + JSON.stringify(dta) + '\n');
         dbs.put('db', 'x', 1);
         dbs.put('db', 'x', 2);
         dbs.put('db', 'x', 3);
@@ -139,17 +139,17 @@ describe('DistributedDatabaseSystem', () => {
     it('keeps three peers in sync', () => {
         let dbs1 = createDBS('user1');
         let log1 = '';
-        dbs1.on('add', 'testdb', (id: string, dta: any) => log1 += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
-        dbs1.on('update', 'testdb', (id: string, dta: any) => log1 += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs1.on('add', 'testdb', false, (id: string, dta: any) => log1 += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs1.on('update', 'testdb', false, (id: string, dta: any) => log1 += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
         stubNetwork.exchangeMessages();
         let dbs2 = createDBS('user2');
         let log2 = '';
-        dbs2.on(['add', 'update'], 'testdb', (id: string, dta: any) => log2 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs2.on(['add', 'update'], 'testdb', false, (id: string, dta: any) => log2 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
         dbs2.connectToNode('user1');
         stubNetwork.exchangeMessages();
         let dbs3 = createDBS('user3');
         let log3 = '';
-        dbs3.on(['add', 'update'], 'testdb', (id: string, dta: any) => log3 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs3.on(['add', 'update'], 'testdb', false, (id: string, dta: any) => log3 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
         dbs3.connectToNode('user1');
         stubNetwork.exchangeMessages();
         dbs1.put('testdb', 'x', ['a', 'b', 'c']);
@@ -211,17 +211,17 @@ describe('DistributedDatabaseSystem', () => {
     it('keeps three peers in sync with different topology', () => {
         let dbs1 = createDBS('user1');
         let log1 = '';
-        dbs1.on('add', 'testdb', (id: string, dta: any) => log1 += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
-        dbs1.on('update', 'testdb', (id: string, dta: any) => log1 += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs1.on('add', 'testdb', false, (id: string, dta: any) => log1 += 'add ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs1.on('update', 'testdb', false, (id: string, dta: any) => log1 += 'update ' + id + ',' + JSON.stringify(dta) + '\n');
         stubNetwork.exchangeMessages();
         let dbs2 = createDBS('user2');
         let log2 = '';
-        dbs2.on(['add', 'update'], 'testdb', (id: string, dta: any) => log2 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs2.on(['add', 'update'], 'testdb', false, (id: string, dta: any) => log2 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
         dbs2.connectToNode('user1');
         stubNetwork.exchangeMessages();
         let dbs3 = createDBS('user3');
         let log3 = '';
-        dbs3.on(['add', 'update'], 'testdb', (id: string, dta: any) => log3 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
+        dbs3.on(['add', 'update'], 'testdb', false, (id: string, dta: any) => log3 += 'add/update ' + id + ',' + JSON.stringify(dta) + '\n');
         dbs3.connectToNode('user2');
         stubNetwork.exchangeMessages();
         dbs1.put('testdb', 'x', ['a', 'b', 'c']);

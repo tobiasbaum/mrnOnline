@@ -6,6 +6,12 @@ import { GameFieldStoreService } from './game-field-store.service';
 
 declare var Peer: any;
 
+interface GameSettings {
+  name: string;
+  idToJoin: string | undefined;
+  clean: boolean;
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -49,15 +55,26 @@ export class AppComponent {
     this.destroy.next();
   }
 
-  start() {
+  gameExists(): boolean {
+    let expected = 'mrn.' + this.formData.playerName;
+    for (let i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      if (key?.startsWith(expected)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private start(idToJoin: string | undefined, clean: boolean) {
     let name = this.formData.playerName;
     if (name) {
       localStorage.setItem('mrnUserName', name);
-      this.createPeer(name);
+      this.createPeer({name, idToJoin, clean});
     }
   }
   
-  createPeer(name: string) {
+  createPeer(s: GameSettings) {
     //var peer = new Peer(undefined, {host: 'localhost', port: 9000, key: 'peerjs', debug: 2});
     var peer = new Peer(undefined, {});
     peer.on('error', (err: any) => {
@@ -66,16 +83,24 @@ export class AppComponent {
     });
     peer.on('open', (id: string) => {
         //alert('My peer ID is: ' + id);
-        this.ngz.run(() => this.loadDeckAndInitGame(peer, id));
+        this.ngz.run(() => this.loadDeckAndInitGame(peer, s));
     });
   }
 
-private loadDeckAndInitGame(peer: any, playerId: string) {
+private loadDeckAndInitGame(peer: any, s: GameSettings) {
   this.http.get(this.formData.deckUrl).subscribe((data: any) => {
-    let deck: Card[] = this.mapDecksAndCards(data);
-    console.log('loaded deck with ' + deck.length + ' cards');
-    this.fieldService.init(new GameField(peer, playerId, this.formData.playerName as string, deck));
-    this.state = 'started';
+    let deck: Card[] | undefined;
+    if (s.clean) {
+      deck = this.mapDecksAndCards(data);
+      console.log('loaded deck with ' + deck.length + ' cards');
+    } else {
+      deck = undefined;
+    }
+    this.fieldService.init(new GameField(peer, peer.id, this.formData.playerName as string, deck, s.clean));
+    if (s.idToJoin) {
+      this.fieldService.gameField.connectToOtherPlayer(s.idToJoin);
+    }
+    this.state = 'joined';
   });
 }
 
@@ -97,13 +122,16 @@ mapDecksAndCards(data: any): Card[] {
 join() {
     var other = prompt('ID des Mitspielers');
     if (other) {
-      this.fieldService.gameField.connectToOtherPlayer(other);
-      this.state = 'joined';
+      this.start(other, true);
     }
 }
 
 waitForOthers() {
-  this.state = 'joined';
+  this.start(undefined, true);
+}
+
+continueGame() {
+  this.start(undefined, false);
 }
 
 dice(sides: number) {

@@ -10,12 +10,10 @@
                 <td><input type="text" name="deckUrl" [(ngModel)]="this.formData.deckUrl" /></td>
             </tr>
         </table>
-        <button (click)="this.start()">Start ...</button>
+        <button (click)="this.waitForOthers()">Neues Spiel starten</button>
+        <button (click)="this.join()">Existierendem Spiel beitreten ...</button>
+        <button *ngIf="gameExists()" (click)="this.continueGame()">Spiel fortsetzen</button>
     </form>
-</ng-container>
-<ng-container *ngIf="state === 'started'">
-    <button (click)="this.waitForOthers()">Neues Spiel starten</button>
-    <button (click)="this.join()">Existierendem Spiel beitreten ...</button>
 </ng-container>
 <ng-container *ngIf="state === 'joined'">
     <div class="grid-parent">

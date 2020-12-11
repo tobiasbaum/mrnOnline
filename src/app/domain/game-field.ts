@@ -86,18 +86,28 @@ class CachedCardsForPlayer {
   graveyardOrder = new Map<number, number | undefined>();
 
   public sortStashes(localLibrary: LocalLibrary) {
-    console.log('library before sort: ' + this.library.cards.map(c => c.name));
     this.library.sort(localLibrary.createOrderMap());
-    console.log('library after sort: ' + this.library.cards.map(c => c.name));
     this.graveyard.sort(this.graveyardOrder);
   }
 }
 
 export class LocalLibrary {
-  private content: number[] = [];
+  public readonly content: number[] = [];
 
-  constructor(deck: Card[]) {
-    this.content = deck.map(c => c.id);
+  constructor(private name: string, private storage: Storage, deck: Card[] | undefined) {
+    if (deck) {
+      console.log('initializing library from deck');
+      this.content = deck.map(c => c.id);
+      this.store();
+    } else {
+      let stored = storage.getItem('mrn.' + name + '.localLibrary');
+      console.log('loaded stored library: ' + stored);
+      if (stored) {
+        this.content = JSON.parse(stored);
+      } else {
+        this.content = [];
+      }
+    }
   }
 
   contains(cardId: number): boolean {
@@ -121,6 +131,7 @@ export class LocalLibrary {
       this.content[currentIndex] = this.content[randomIndex];
       this.content[randomIndex] = temporaryValue;
     }
+    this.store();
   }
 
   createOrderMap(): Map<number, number | undefined> {
@@ -132,7 +143,18 @@ export class LocalLibrary {
   }
 
   draw(): number | undefined {
-    return this.content.shift();
+    let ret = this.content.shift();
+    this.store();
+    return ret;
+  }
+
+  putOnTop(cardId: number) {
+    this.content.unshift(cardId);
+    this.store();
+  }
+
+  private store() {
+    this.storage.setItem('mrn.' + this.name + '.localLibrary', JSON.stringify(this.content));
   }
 }
 
@@ -209,15 +231,19 @@ export class CardCache {
   private dirty: boolean;
   private content: CachedCards | undefined;
 
-  constructor(deck: Card[], private db: DistributedDatabaseSystem, private library: LocalLibrary) {
-    deck.forEach(c => c.writeCardStats(db));
-    this.knownCards = deck.map(c => c.id);
+  constructor(deck: Card[] | undefined, private db: DistributedDatabaseSystem, private library: LocalLibrary) {
+    if (deck) {
+      deck.forEach(c => c.writeCardStats(db));
+      this.knownCards = deck.map(c => c.id);
+    } else {
+      this.knownCards = library.content.slice();
+    }
     this.dirty = true;
-    db.on('add', 'cardData', (cardId: number) => {
+    db.on('add', 'cardData', true, (cardId: number) => {
       this.ensureKnown(cardId);
       this.setDirty();
     });
-    db.on('update', 'cardData', () => this.setDirty());
+    db.on('update', 'cardData', false, () => this.setDirty());
   }
 
   private ensureKnown(cardId: number) {
@@ -417,22 +443,28 @@ export class CardCache {
       private graveyardCounter: number = 0;
       private readonly subject: Subject<void> = new Subject();
 
-    constructor(id: string, name: string, db: DistributedDatabaseSystem, cardCache: CardCache, localLibrary: LocalLibrary) {
+    constructor(id: string, name: string, db: DistributedDatabaseSystem, cardCache: CardCache, localLibrary: LocalLibrary, clean: boolean) {
       this.id = id;
       this.name = name;
       this.db = db;
       this.cardCache = cardCache;
       this.localLibrary = localLibrary;
-      this.db.put('librarySizes', this.name, this.library.size);
-      this.lifes = 20;
-      this.db.put('lifes', this.name, this.lifes);
-      let h = Math.floor(Math.random() * 72) * 5;
-      let s = 85 + Math.floor(Math.random() * 10);
-      let l = 35 + Math.floor(Math.random() * 10);
-      this.color = 'hsl(' + h + ',' + s + '%,' + l + '%)';
-      this.orderNumber = Math.random();
+      if (clean) {
+        this.db.put('librarySizes', this.name, this.library.size);
+        this.db.put('lifes', this.name, 20);
+        let h = Math.floor(Math.random() * 72) * 5;
+        let s = 85 + Math.floor(Math.random() * 10);
+        let l = 35 + Math.floor(Math.random() * 10);
+        this.color = 'hsl(' + h + ',' + s + '%,' + l + '%)';
+        this.orderNumber = Math.random();
+      } else {
+        let playerData: PlayerData = this.db.get('playerData', this.name);
+        this.color = playerData.color;
+        this.orderNumber = playerData.orderNumber;
+      }
+      this.lifes = this.db.get('lifes', this.name);
 
-      this.db.on(['add', 'update'], 'endedPlayers', (name: string, dta: boolean) => { 
+      this.db.on(['add', 'update'], 'endedPlayers', false, (name: string, dta: boolean) => { 
         if (dta) {
           this.handlePlayerEnd(name);
         }
@@ -639,6 +671,7 @@ export class CardCache {
         });
         this.sendNotification('legt ' + this.cardName(cardId) + ' oben auf die Bibliothek');
       }
+      this.localLibrary.putOnTop(cardId);
       this.db.put('librarySizes', this.name, this.library.size);
       this.subject.next();
     }
@@ -734,9 +767,9 @@ export class CardCache {
     private subject: Subject<void> = new Subject();
 
     constructor(public name: string, public db: DistributedDatabaseSystem, private cardCache: CardCache) {
-      this.db.on(['add', 'update'], 'playerData', (playerName: string, name: any) => this.notifyIfRightName(playerName));
-      this.db.on(['add', 'update'], 'lifes', (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
-      this.db.on(['add', 'update'], 'endedPlayers', (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
+      this.db.on(['add', 'update'], 'playerData', false, (playerName: string, name: any) => this.notifyIfRightName(playerName));
+      this.db.on(['add', 'update'], 'lifes', false, (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
+      this.db.on(['add', 'update'], 'endedPlayers', false, (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
     }
 
     private notifyIfRightName(playerName: string) {
@@ -808,20 +841,22 @@ export class CardCache {
     public others: OtherPlayer[];
     public myself: SelfPlayer;
 
-    constructor(peer: any, ownId: string, ownName: string, deck: Card[]) {
+    constructor(peer: any, ownId: string, ownName: string, deck: Card[] | undefined, clean: boolean) {
       this.others = [];
-      this.db = new DistributedDatabaseSystem(ownName, peer, ownId, localStorage, true);
-      let localLibrary = new LocalLibrary(deck);
-      localLibrary.shuffle();
-      this.cardCache = new CardCache(deck, this.db, localLibrary);
-      this.db.on('add', 'playerData', (name: string, data: any) => {
+      this.db = new DistributedDatabaseSystem(ownName, peer, ownId, localStorage, clean);
+      let localLibrary = new LocalLibrary(ownName, localStorage, deck);
+      if (clean) {
+        localLibrary.shuffle();
+      }
+      this.cardCache = new CardCache(clean ? deck : undefined, this.db, localLibrary);
+      this.db.on('add', 'playerData', true, (name: string, data: any) => {
         if (name !== ownName) {
           this.others.push(new OtherPlayer(name, this.db, this.cardCache));
         }
         this.ensurePlayersSorted();
       });
   
-      this.myself = new SelfPlayer(ownId, ownName, this.db, this.cardCache, localLibrary);
+      this.myself = new SelfPlayer(ownId, ownName, this.db, this.cardCache, localLibrary, clean);
       this.db.put('playerData', ownName, {
         id: ownId,
         name: ownName,
@@ -831,12 +866,12 @@ export class CardCache {
     }
 
     registerMessageHandler(handler: Function) {
-        this.db.on('add', 'messages', handler);
+        this.db.on('add', 'messages', true, handler);
     }
   
     registerPlayerChangeHandler(handler: Function) {
-      this.db.on('add', 'currentPlayer', handler);
-      this.db.on('update', 'currentPlayer', handler);
+      this.db.on('add', 'currentPlayer', true, handler);
+      this.db.on('update', 'currentPlayer', false, handler);
   }
 
   connectToOtherPlayer(id: string) {
