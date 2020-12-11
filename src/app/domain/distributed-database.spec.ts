@@ -1,4 +1,5 @@
 import { DistributedDatabaseSystem } from "./distributed-database";
+import { StorageStub } from './storage-stub';
 
 describe('DistributedDatabaseSystem', () => {
 
@@ -82,7 +83,7 @@ describe('DistributedDatabaseSystem', () => {
   
     function createDBS(user: string): DistributedDatabaseSystem {
         let p = new StubPeer(user, stubNetwork);
-        let dds = new DistributedDatabaseSystem(p, user);
+        let dds = new DistributedDatabaseSystem('dbs', p, user, new StorageStub(), true);
         return dds;
     }
     

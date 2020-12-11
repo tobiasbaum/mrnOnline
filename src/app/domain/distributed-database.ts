@@ -1,11 +1,18 @@
 class Database {
 
-    private times: any;
-    private data: any;
+  private times: any;
+  private data: any;
 
-  constructor() {
-    this.times = {};
-    this.data = {};
+  constructor(private storage: Storage, private name: string) {
+    let storedData = storage.getItem(name);
+    if (storedData) {
+      let obj = JSON.parse(storedData);
+      this.times = obj.times;
+      this.data = obj.data;
+    } else {
+      this.times = {};
+      this.data = {};  
+    }
   }
 
   put(time: number, id: string, data: any) {
@@ -14,6 +21,7 @@ class Database {
       if (lastTime < time) {
         this.times[id] = time;
         this.data[id] = data;
+        this.saveToStorage();
         return 'update';
       } else {
         return 'ignore';
@@ -21,8 +29,17 @@ class Database {
     } else {
       this.times[id] = time;
       this.data[id] = data;
+      this.saveToStorage();
       return 'add';
     }
+  }
+
+  private saveToStorage() {
+    let obj = {
+      times: this.times,
+      data: this.data
+    }
+    this.storage.setItem(this.name, JSON.stringify(obj));
   }
 
   get(id: string) {
@@ -30,15 +47,14 @@ class Database {
   }
 
   dumpEntries(conn: any, databaseName: string, sender: string, knownReceivers: string[]) {
-      let _this = this;
-    Object.keys(this.times).forEach(function (id) {
+    Object.keys(this.times).forEach(id => {
       let packet = {
         src: sender,
-        t: _this.times[id],
+        t: this.times[id],
         rcv: knownReceivers,
         db: databaseName,
         id: id,
-        dta: _this.data[id]
+        dta: this.data[id]
       };
       conn.send(packet);
       console.log('dump ' + JSON.stringify(packet) + ' to ' + conn.peer);
@@ -47,27 +63,64 @@ class Database {
 }
 
 export class DistributedDatabaseSystem {
+  private systemName: string;
   private peer: any;
-  private ownName: string;
+  private ownPeerId: string;
   private time: number;
   private otherNames: string[];
   private others: any[];
   private callbacks: any;
   private databases: any;
+  private storage: Storage;
 
-  constructor(peer: any, ownName: string) {
+  constructor(systemName: string, peer: any, ownPeerId: string, storage: Storage, clean: boolean) {
+    this.systemName = systemName;
     this.peer = peer;
-    this.ownName = ownName;
+    this.storage = storage;
+    this.ownPeerId = ownPeerId;
     this.time = 0;
     this.otherNames = [];
     this.others = [];
     this.callbacks = {add: {}, update: {}, ignore: {}};
     this.databases = {};
+    if (clean) {
+      this.clear();
+    } else {
+      this.connectToKnownPeers();
+    }
     peer.on('connection', (conn: any) => this.addNode(conn));
   }
 
+  private clear() {
+    let knownDatabases = this.getStoredDatabaseNames();
+    knownDatabases.forEach(key => this.storage.removeItem(this.systemName + '.' + key));
+    this.storage.removeItem(this.systemName + '.meta.knownDatabases');
+    this.storage.removeItem(this.systemName + '.meta.knownPeerIds');
+  }
+
+  private getStoredDatabaseNames(): string[] {
+    let dbs = this.storage.getItem(this.systemName + '.meta.knownDatabases');
+    if (!dbs) {
+      return [];
+    }
+    return JSON.parse(dbs);
+  }
+
+  private connectToKnownPeers() {
+    let knownPeers = this.getStoredPeers();
+    knownPeers.forEach(id => this.connectToNode(id));
+  }
+
+  private getStoredPeers(): string[] {
+    let peers = this.storage.getItem(this.systemName + '.meta.knownPeerIds');
+    if (!peers) {
+      return [];
+    }
+    return JSON.parse(peers);
+  }
+
   connectToNode(id: string) {
-    console.log(this.ownName + ' connects to ' + id);
+    console.log(this.ownPeerId + ' connects to ' + id);
     var conn = this.peer.connect(id, {reliable: true});
     this.addNode(conn);
   }
@@ -76,26 +129,23 @@ export class DistributedDatabaseSystem {
     if (this.others.indexOf(conn) >= 0) {
       return;
     }
-    console.log('node added to ' + this.ownName + ': ' + conn.peer);
+    console.log('node added to ' + this.ownPeerId + ': ' + conn.peer);
     this.otherNames.push(conn.peer);
     this.others.push(conn);
-    var _this = this;
-    conn.on('data', function(d: any) {
-      _this.handleData(d);
-    });
-    conn.on('open', function(d: any) {
-      _this.dumpDatabasesTo(conn);
-    });
+    this.storage.setItem(this.systemName + '.meta.knownPeerIds', JSON.stringify(this.otherNames));
+
+    conn.on('data', (d: any) => this.handleData(d));
+    conn.on('open', (d: any) => this.dumpDatabasesTo(conn));
   }
 
   private dumpDatabasesTo(conn: any) {
     for (let [name, db] of Object.entries(this.databases)) {
-      (db as Database).dumpEntries(conn, name, this.ownName, this.otherNames);
+      (db as Database).dumpEntries(conn, name, this.ownPeerId, this.otherNames);
     }
   }
 
   private handleData(d: any) {
-    console.log(this.ownName + ' received: ' + JSON.stringify(d));
+    console.log(this.ownPeerId + ' received: ' + JSON.stringify(d));
     this.time = Math.max(this.time, d.t);
     this.ensureDbExists(d.db);
     let eventType = this.databases[d.db].put(d.t, d.id, d.dta);
@@ -110,14 +160,17 @@ export class DistributedDatabaseSystem {
 
   private ensureDbExists(dbName: string) {
     if (!this.databases[dbName]) {
-      this.databases[dbName] = new Database();
+      this.databases[dbName] = new Database(this.storage, this.systemName + '.' + dbName);
+      let knownDatabases = this.getStoredDatabaseNames();
+      knownDatabases.push(dbName);
+      this.storage.setItem(this.systemName + '.meta.knownDatabases', JSON.stringify(knownDatabases));
     }
   }
 
   private forwardToFurtherReceivers(packet: any) {
     let furtherReceivers: string[] = [];
     let existingSet = new Set(packet.rcv);
-    existingSet.add(this.ownName);
+    existingSet.add(this.ownPeerId);
     existingSet.add(packet.src);
     this.otherNames.forEach(function (x) {
       if (!existingSet.has(x)) {
@@ -135,7 +188,7 @@ export class DistributedDatabaseSystem {
 
   private establishConnectionToUnknownNodes(packet: any) {
     let nameSet = new Set(this.otherNames);
-    nameSet.add(this.ownName);
+    nameSet.add(this.ownPeerId);
     packet.rcv
       .filter((x: string) => !nameSet.has(x))
       .forEach((x: string) => this.connectToNode(x));
@@ -145,12 +198,12 @@ export class DistributedDatabaseSystem {
   }
 
   add(listDb: string, data: any) {
-    this.put(listDb, this.ownName + this.time, data);
+    this.put(listDb, this.ownPeerId + this.time, data);
   }
 
   put(database: string, id: string | number, data: any) {
     var packet = {
-      src: this.ownName,
+      src: this.ownPeerId,
       t: this.time++,
       rcv: this.otherNames,
       db: database,

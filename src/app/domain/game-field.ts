@@ -810,7 +810,7 @@ export class CardCache {
 
     constructor(peer: any, ownId: string, ownName: string, deck: Card[]) {
       this.others = [];
-      this.db = new DistributedDatabaseSystem(peer, ownId);
+      this.db = new DistributedDatabaseSystem(ownName, peer, ownId, localStorage, true);
       let localLibrary = new LocalLibrary(deck);
       localLibrary.shuffle();
       this.cardCache = new CardCache(deck, this.db, localLibrary);
