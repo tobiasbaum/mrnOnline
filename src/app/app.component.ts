@@ -126,6 +126,13 @@ join() {
     }
 }
 
+addConnection() {
+  var other = prompt('ID des Mitspielers');
+  if (other) {
+    this.fieldService.gameField.connectToOtherPlayer(other);
+  }
+}
+
 waitForOthers() {
   this.start(undefined, true);
 }
