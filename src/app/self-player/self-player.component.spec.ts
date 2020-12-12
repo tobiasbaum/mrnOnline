@@ -21,7 +21,7 @@ describe('SelfPlayerComponent', () => {
     let peer = {
       on: () => {}
     };
-    fieldService.init(new GameField(peer, 'x', 'y', []));
+    fieldService.init(new GameField(peer, 'x', 'y', [], true));
     component = fixture.componentInstance;    
     fixture.detectChanges();
   });
