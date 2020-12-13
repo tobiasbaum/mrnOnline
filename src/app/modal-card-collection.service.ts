@@ -6,7 +6,7 @@ import { CardBag, CardCollection } from './domain/game-field';
   providedIn: 'root'
 })
 export class ModalCardCollectionService {
-  public collection: CardCollection = new CardBag([]);
+  public collection: () => CardCollection = () => new CardBag([]);
   public name: string = 'coll';
   public act: string = '';
   public isShown: boolean = false;
@@ -14,7 +14,7 @@ export class ModalCardCollectionService {
 
   constructor() { }
 
-  show(cards: CardCollection, name: string, actions: string) {
+  show(cards: () => CardCollection, name: string, actions: string) {
     this.collection = cards;
     this.name = name;
     this.act = actions;

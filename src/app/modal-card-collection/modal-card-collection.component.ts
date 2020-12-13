@@ -1,6 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
-import { CardCollection } from '../domain/game-field';
+import { CardCollectionComponent } from '../card-collection/card-collection.component';
+import { GameField } from '../domain/game-field';
+import { GameFieldStoreService } from '../game-field-store.service';
 import { ModalCardCollectionService } from '../modal-card-collection.service';
 
 @Component({
@@ -10,11 +12,22 @@ import { ModalCardCollectionService } from '../modal-card-collection.service';
 })
 export class ModalCardCollectionComponent implements OnInit {
 
-  constructor(public service: ModalCardCollectionService) { 
-    service
+  private destroy = new Subject();
+
+  @ViewChild(CardCollectionComponent)
+  private cc!: CardCollectionComponent;
+
+  constructor(public service: ModalCardCollectionService, private field: GameFieldStoreService) { 
+    field.subscribe(
+      (f: GameField) => f.myself.subscribeForUpdate(() => this.cc.collection = service.collection()),
+      this.destroy);
   }
 
   ngOnInit(): void {
+  }
+
+  ngOnDestroy(): void {
+    this.destroy.next();
   }
 
   hide() {

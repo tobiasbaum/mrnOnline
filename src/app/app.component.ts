@@ -141,6 +141,13 @@ continueGame() {
   this.start(undefined, false);
 }
 
+diceX() {
+  let x = prompt('Anzahl Seiten', '20');
+  if (x) {
+    this.dice(parseInt(x));
+  }
+}
+
 dice(sides: number) {
   let n = Math.floor(Math.random() * sides) + 1;
   this.fieldService.gameField.myself.sendNotification('würfelt ' + n + ' (von ' + sides + ')');

@@ -110,7 +110,7 @@ export class SelfPlayerComponent implements OnInit {
       this.gameField.myself.sendNotification('schließt die Bibliothek')
       subscr.unsubscribe();
     });
-    this.mcc.show(this.gameField.myself.library, 'Bibliothek', 'DR,PL,PT,GR');
+    this.mcc.show(() => this.gameField.myself.library, 'Bibliothek', 'DR,PL,PT,GR');
   }
 
   shuffleLibrary() {

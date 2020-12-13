@@ -76,8 +76,7 @@ export class CardComponent implements OnInit {
   }
 
   openStack() {
-    let cards = new CardBag(this.card.modifiers);
-    this.mcc.show(cards, 'Kartendetails', this.intersectActions(['HA', 'GR', 'EX', 'PL']));
+    this.mcc.show(() => new CardBag(this.card.modifiers), 'Kartendetails', this.intersectActions(['HA', 'GR', 'EX', 'PL']));
   }
 
   private intersectActions(otherActions: string[]): string {
