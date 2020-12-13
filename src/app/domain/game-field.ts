@@ -148,6 +148,14 @@ export class LocalLibrary {
     return ret;
   }
 
+  removeIfContained(cardId: number) {
+    let idx = this.content.indexOf(cardId);
+    if (idx > 0) {
+      this.content.splice(idx, 1);
+      this.store();
+    }
+  }
+
   putOnTop(cardId: number) {
     this.content.unshift(cardId);
     this.store();
@@ -539,8 +547,7 @@ export class CardCache {
         this.sendNotification('kann nicht ziehen');
         return;
       }
-      let c = this.cardCache.get().getOrCreateCard(cardId);
-      this.addToHand(c);
+      this.addToHand(cardId);
       this.db.put('librarySizes', this.name, this.library.size);
       this.sendNotification('zieht eine Karte');
       this.subject.next();
@@ -552,14 +559,15 @@ export class CardCache {
       this.cardCache.setDirty();
     }
 
-    private addToHand(c: Card) {
-      this.writeCardData(c.id, {
+    private addToHand(cardId: number) {
+      this.writeCardData(cardId, {
         state: CardState.Normal,
         locationType: LocationType.LIBRARY_OR_HAND,
         locationPlayer: this.name,
         locationData: undefined,
         counter: undefined
       });
+      this.localLibrary.removeIfContained(cardId);
       this.db.put('handSizes', this.name, this.hand.size);
     }
 
@@ -593,6 +601,7 @@ export class CardCache {
         locationData: this.graveyardCounter--,
         counter: undefined
       });
+      this.localLibrary.removeIfContained(card.id);
       if (card.type.token) {
         this.sendNotification('Token ' + card.name + ' verschwindet');
       } else {
@@ -625,6 +634,7 @@ export class CardCache {
         locationData: undefined,
         counter: undefined
       });
+      this.localLibrary.removeIfContained(cardId);
       this.sendNotification('spielt ' + this.cardName(cardId) + ' aus');
       this.subject.next();
     }
@@ -641,18 +651,13 @@ export class CardCache {
         locationData: undefined,
         counter: undefined
       });
+      this.localLibrary.removeIfContained(cardId);
       this.sendNotification('spielt ' + this.cardName(cardId) + ' getappt aus');
       this.subject.next();
     }
   
     putToHand(cardId: number) {
-      this.writeCardData(cardId, {
-        state: CardState.Normal,
-        locationType: LocationType.LIBRARY_OR_HAND,
-        locationPlayer: this.name,
-        locationData: undefined,
-        counter: undefined
-      });
+      this.addToHand(cardId);
       this.sendNotification('nimmt ' + this.cardName(cardId) + ' auf die Hand');
       this.subject.next();
     }
@@ -713,6 +718,7 @@ export class CardCache {
         locationData: undefined,
         counter: card.counter
       });
+      this.localLibrary.removeIfContained(card.id);
       this.subject.next();
     }
 

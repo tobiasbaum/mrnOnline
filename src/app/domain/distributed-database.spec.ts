@@ -1,81 +1,81 @@
 import { DistributedDatabaseSystem } from "./distributed-database";
 import { StorageStub } from './storage-stub';
 
+export class StubNetwork {
+    peers = new Map<string, StubPeer>();
+    msg: any[] = [];
+    handlers = new Map<string, StubConnection>();
+
+    exchangeMessages() {
+        let cnt = 0;
+        while (this.msg.length > 0) {
+            let m = this.msg.shift();
+            m();
+            cnt++;
+        }
+        console.log('exchanged ' + cnt + ' messages');
+    }
+
+    getOrCreateConnection(from: StubPeer, to: string) {
+        let key = from.user + '->' + to;
+        if (this.handlers.has(key)) {
+            return this.handlers.get(key);
+        }
+        let c = new StubConnection(from, to);
+        this.handlers.set(key, c);
+        this.peers.get(to)?.connect(from.user, {});
+        return c;
+    }
+
+}
+
+export class StubPeer {
+
+    onConnection: any[] = [];
+
+    constructor(public user: string, public network: StubNetwork) {
+        network.peers.set(user, this);
+    }
+
+    connect(id: string, options: any) {
+        this.network.msg.push(() => {this.network.handlers.get(this.user + '->' + id)?.onOpen.forEach(x => x())});
+        let conn = this.network.getOrCreateConnection(this, id);
+        this.network.msg.push(() => {this.onConnection.forEach(x => x(conn))});
+        return conn;
+    }
+
+    on(t: string, f: any) {
+        if (t === 'connection') {
+            this.onConnection.push(f);
+        }
+    }
+}
+
+export class StubConnection {
+    onOpen: any[] = [];
+    onData: any[] = [];
+
+    constructor(public myself: StubPeer, public peer: string) {
+    }
+
+    on(t: string, f: any) {
+        if (t === 'open') {
+            this.onOpen.push(f);
+        }
+        if (t === 'data') {
+            this.onData.push(f);
+        }
+    }
+
+    send(data: any) {
+        let nw = this.myself.network;
+        nw.msg.push(() => {nw.handlers.get(this.peer + '->' + this.myself.user)?.onData.forEach(x => x(JSON.parse(JSON.stringify(data))))});
+    }
+}
+
 describe('DistributedDatabaseSystem', () => {
 
     let stubNetwork: StubNetwork;
-
-    class StubNetwork {
-        peers = new Map<string, StubPeer>();
-        msg: any[] = [];
-        handlers = new Map<string, StubConnection>();
-
-        exchangeMessages() {
-            let cnt = 0;
-            while (this.msg.length > 0) {
-                let m = this.msg.shift();
-                m();
-                cnt++;
-            }
-            console.log('exchanged ' + cnt + ' messages');
-        }
-
-        getOrCreateConnection(from: StubPeer, to: string) {
-            let key = from.user + '->' + to;
-            if (this.handlers.has(key)) {
-                return this.handlers.get(key);
-            }
-            let c = new StubConnection(from, to);
-            this.handlers.set(key, c);
-            this.peers.get(to)?.connect(from.user, {});
-            return c;
-        }
-
-    }
-
-    class StubPeer {
-
-        onConnection: any[] = [];
-
-        constructor(public user: string, public network: StubNetwork) {
-            network.peers.set(user, this);
-        }
-
-        connect(id: string, options: any) {
-            this.network.msg.push(() => {this.network.handlers.get(this.user + '->' + id)?.onOpen.forEach(x => x())});
-            let conn = this.network.getOrCreateConnection(this, id);
-            this.network.msg.push(() => {this.onConnection.forEach(x => x(conn))});
-            return conn;
-        }
-
-        on(t: string, f: any) {
-            if (t === 'connection') {
-                this.onConnection.push(f);
-            }
-        }
-    }
-
-    class StubConnection {
-        onOpen: any[] = [];
-        onData: any[] = [];
-
-        constructor(public myself: StubPeer, public peer: string) {
-        }
-
-        on(t: string, f: any) {
-            if (t === 'open') {
-                this.onOpen.push(f);
-            }
-            if (t === 'data') {
-                this.onData.push(f);
-            }
-        }
-
-        send(data: any) {
-            let nw = this.myself.network;
-            nw.msg.push(() => {nw.handlers.get(this.peer + '->' + this.myself.user)?.onData.forEach(x => x(JSON.parse(JSON.stringify(data))))});
-        }
-    }
 
     beforeEach(() => {
         stubNetwork = new StubNetwork();
