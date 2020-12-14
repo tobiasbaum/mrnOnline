@@ -16,24 +16,6 @@
     </form>
 </ng-container>
 <ng-container *ngIf="state === 'joined'">
-    <div class="grid-parent">
-        <div class="grid-top">
-            <button *ngIf="!fieldService.gameField.currentPlayerName" (click)="fieldService.gameField.shuffleStartPlayer()">Zufälligen Startspieler wählen</button>
-            <button *ngIf="isOwnTurn()" (click)="fieldService.gameField.nextPlayer()">Zug beenden</button>
-            <ng-container *ngFor="let p of fieldService.gameField.allActivePlayers">&nbsp;<a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="fieldService.gameField.currentPlayerName === p.name"> {{p.name}} </a></ng-container>
-            &nbsp; <button (click)="dice(6)">Würfel 6</button><button (click)="diceX()">Würfel X ...</button><button (click)="randomOpponent()">Würfel Gegner</button>
-            &nbsp; <button (click)="endGameForPlayer()">Spieler aus Spiel nehmen ...</button>
-        </div>
-        <div class="grid-center">
-            <mrn-self-player></mrn-self-player>
-            
-            <mrn-other-player *ngFor="let p of otherPlayers" [me]="p"></mrn-other-player>            
-        </div>
-        <div class="grid-right">
-            <mrn-card-details></mrn-card-details>   
-            <mrn-chat-box></mrn-chat-box>
-            <button (click)="addConnection()">Erneut verbinden ...</button>                       
-        </div>
-    </div>    
+    <mrn-self-player></mrn-self-player>
     <mrn-modal-card-collection #mcc></mrn-modal-card-collection>
 </ng-container>

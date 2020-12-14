@@ -126,55 +126,12 @@ join() {
     }
 }
 
-addConnection() {
-  var other = prompt('ID des Mitspielers');
-  if (other) {
-    this.fieldService.gameField.connectToOtherPlayer(other);
-  }
-}
-
 waitForOthers() {
   this.start(undefined, true);
 }
 
 continueGame() {
   this.start(undefined, false);
-}
-
-diceX() {
-  let x = prompt('Anzahl Seiten', '20');
-  if (x) {
-    this.dice(parseInt(x));
-  }
-}
-
-dice(sides: number) {
-  let n = Math.floor(Math.random() * sides) + 1;
-  this.fieldService.gameField.myself.sendNotification('würfelt ' + n + ' (von ' + sides + ')');
-}
-
-randomOpponent() {
-  let opponents = this.fieldService.gameField.others.filter(p => p.isInGame);
-  if (opponents.length === 0) {
-    return;
-  }
-  let n = Math.floor(Math.random() * opponents.length);
-  this.fieldService.gameField.myself.sendNotification('würfelt Gegner ' + opponents[n].name);
-}
-
-isOwnTurn(): boolean {
-  return this.fieldService.gameField.currentPlayerName === this.fieldService.gameField.myself.name;
-}
-
-get otherPlayers(): OtherPlayer[] {
-  return this.fieldService.gameField.others;
-}
-
-endGameForPlayer() {
-  let nameOrId = prompt('Spieler', this.fieldService.gameField.myself.name);
-  if (nameOrId) {
-    this.fieldService.gameField.endGameForPlayer(nameOrId);
-  }
 }
 
 }

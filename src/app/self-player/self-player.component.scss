@@ -1,3 +1,50 @@
 legend.turn {
     color: red;
 }
+
+.grid-parent {
+    display: grid;
+    grid-template-rows: 30px 1.0fr;
+    grid-template-columns: 1.0fr 250px;
+    width: 100%;
+    height: 100%;
+}
+
+.grid-top {
+    grid-row-start: 1;
+    grid-column-start: 1;
+}
+
+.grid-center {
+    grid-row-start: 2;
+    grid-column-start: 1;
+    overflow: scroll;
+}
+
+.grid-right {
+    grid-row-start: 1;
+    grid-row-end: span 2;
+    grid-column-start: 2;
+}
+
+a.playerLink {
+    color: white;
+}
+
+a.activePlayer {
+    animation-duration: 0.7s;
+    animation-name: showActive;
+    animation-iteration-count: 2;
+}
+
+@keyframes showActive {
+    0% {
+        filter: none;
+    }
+    50% {
+        filter: hue-rotate(90deg);
+    }
+    100% {
+        filter: none;
+    }
+}

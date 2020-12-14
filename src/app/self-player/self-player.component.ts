@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Inject, NgZone, OnInit, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
-import { CardBag, CardStash, GameField } from '../domain/game-field';
+import { CardBag, CardStash, GameField, OtherPlayer } from '../domain/game-field';
 import { GameFieldStoreService } from '../game-field-store.service';
 import { ModalCardCollectionService } from '../modal-card-collection.service';
 
@@ -14,7 +14,7 @@ export class SelfPlayerComponent implements OnInit {
   private destroy = new Subject();
 
   constructor(
-      private field: GameFieldStoreService, 
+      public field: GameFieldStoreService, 
       private mcc: ModalCardCollectionService,
       cdr: ChangeDetectorRef, 
       ngz: NgZone) {
@@ -125,4 +125,47 @@ export class SelfPlayerComponent implements OnInit {
       this.gameField.myself.createToken(name);
     }
   }
+  diceX() {
+    let x = prompt('Anzahl Seiten', '20');
+    if (x) {
+      this.dice(parseInt(x));
+    }
+  }
+  
+  dice(sides: number) {
+    let n = Math.floor(Math.random() * sides) + 1;
+    this.field.gameField.myself.sendNotification('würfelt ' + n + ' (von ' + sides + ')');
+  }
+  
+  randomOpponent() {
+    let opponents = this.field.gameField.others.filter(p => p.isInGame);
+    if (opponents.length === 0) {
+      return;
+    }
+    let n = Math.floor(Math.random() * opponents.length);
+    this.field.gameField.myself.sendNotification('würfelt Gegner ' + opponents[n].name);
+  }
+  
+  isOwnTurn(): boolean {
+    return this.field.gameField.currentPlayerName === this.field.gameField.myself.name;
+  }
+  
+  get otherPlayers(): OtherPlayer[] {
+    return this.field.gameField.others;
+  }
+  
+  endGameForPlayer() {
+    let nameOrId = prompt('Spieler', this.field.gameField.myself.name);
+    if (nameOrId) {
+      this.field.gameField.endGameForPlayer(nameOrId);
+    }
+  }
+  
+  addConnection() {
+    var other = prompt('ID des Mitspielers');
+    if (other) {
+      this.field.gameField.connectToOtherPlayer(other);
+    }
+  }
+  
 }
