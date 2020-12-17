@@ -1,3 +1,76 @@
+<table cellpadding="0" cellspacing="0" width="100%" style="border: solid 1px #000000;">
+    <tr>
+        <td style="font-size: 30px; width:250px; height:50px; text-align:center;">{{name}}</td>
+        <td>
+            <button *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()">Zufälligen Startspieler wählen</button>
+            <button *ngIf="isOwnTurn()" (click)="field.gameField.nextPlayer()">Zug beenden</button>
+            <button (click)="dice(6)">Würfel 6</button><button (click)="diceX()">Würfel X ...</button>
+            <button (click)="randomOpponent()">Würfel Gegner</button>
+            <button (click)="endGameForPlayer()">Spieler aus Spiel nehmen ...</button>
+            <button (click)="addConnection()">Erneut verbinden ...</button><br>
+            <ng-container *ngFor="let p of field.gameField.allActivePlayers">&nbsp;<a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name"> {{p.name}} </a></ng-container>
+        </td>
+        <td style="width:400px;"><mrn-chat-box></mrn-chat-box></td>
+    </tr>
+    <tr>
+        <td rowspan="2">
+            <table cellpadding="0" cellspacing="0" style="border: solid 1px #000000;">
+                <tr>
+                    <td colspan="6" style="text-align: center;"><mrn-card-details></mrn-card-details></td>
+                </tr>
+                <tr>
+                    <td rowspan="2" width="25%" height="64" style="font-size:40px; text-align: center;">{{this.lifes}}</td>
+                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.increaseLifes()">+</button></td>
+                    <td width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.multiLifeIncrease()">+X</button></td>
+                    <td rowspan="2" width="25%" style="font-size:40px; text-align: center;">PC</td>
+                    <td width="12.5%" style="font-size:20px; text-align: center;">+</td>
+                    <td width="12.5%" style="font-size:20px; text-align: center;">+X</td>
+                </tr>
+                <tr>
+                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.decreaseLifes()">-</button></td>
+                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.multiLifeDecrease()">-X</button></td>
+                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;">-</td>
+                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;">-X</td>
+                </tr>
+                <tr>
+                    <td width="50%" colspan="3">
+                            <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA,EX,LI'" [collapsed]="true"></mrn-card-collection>
+                            <mrn-card-collection *ngIf="this.exile.size > 0" [collection]="this.exile" name="Aus dem Spiel" [act]="'GR'" [collapsed]="true"></mrn-card-collection>
+                    </td>
+                    <td width="50%" colspan="3">
+                            {{this.librarySize()}} Karten<br>
+                            <button (click)="this.drawCard()">Karte ziehen</button>
+                            <button (click)="this.openLibrary()">Bibliothek öffnen</button>
+                            <button (click)="this.shuffleLibrary()">Bibliothek mischen</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                            <button (click)="this.createToken()">Token erstellen</button>
+                            <button (click)="this.untapAll()">Alles enttappen</button><br>
+                            ID: {{id}}
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td colspan="2">
+            <div style="width: 1000px; height:300px; padding: 0px;margin-bottom: 0px;overflow-y: auto;border: 1px solid #DDD;overflow-x: auto;min-height: 0.01%;">
+                <table cellpadding="0" cellspacing="0" width="{{playerCount}}%">
+                    <tr>
+                        <td style="width: 1000px;" *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
+                    </tr>
+                </table>      
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
+            <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
+        </td>
+    </tr>
+</table>
+<!--
 <div class="grid-parent">
     <div class="grid-top">
         <button *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()">Zufälligen Startspieler wählen</button>
@@ -42,3 +115,4 @@
         <button (click)="addConnection()">Erneut verbinden ...</button>                       
     </div>
 </div>    
+-->

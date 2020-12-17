@@ -1,3 +1,25 @@
+    <table cellpadding="0" cellspacing="0" style="width: 1000px; height: 600px; border: solid 1px #000000">
+        <tr>
+            <td rowspan="2" style="text-align:right">
+                {{handSize}} Handkarten
+                <mrn-card-collection [collection]="this.table" name="Ausgelegt"></mrn-card-collection>
+            </td>
+            <td width="125">
+                {{librarySize}} Karten
+            </td>
+            <td width="125">
+                <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>
+            </td>
+        </tr>
+        <tr>
+            <td width="62" height="65" style="font-size: 40px;">PC</td>
+            <td colspan="2" width="125" height="65" style="text-align: center; font-size: 30px;">{{name}}</td>
+            <td width="62" height="65" style="font-size: 40px;">{{lifes}}</td>
+        </tr>
+    </table>
+
+
+<!--
 <fieldset id="{{id}}">
     <legend [class.turn]="isCurrentPlayer()">{{name}} ({{id}})</legend>
     <ng-container *ngIf="this.isInGame">
@@ -9,3 +31,4 @@
         Hat das Spiel verlassen.
     </ng-container>
 </fieldset>
+-->

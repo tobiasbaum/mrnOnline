@@ -168,4 +168,8 @@ export class SelfPlayerComponent implements OnInit {
     }
   }
   
+
+  get playerCount(): number {
+    return (this.field.gameField.allActivePlayers.length - 1) * 100;
+  }
 }
