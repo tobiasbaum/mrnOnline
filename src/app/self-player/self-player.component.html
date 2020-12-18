@@ -1,6 +1,6 @@
-<table cellpadding="0" cellspacing="0" width="100%" style="border: solid 1px #000000;">
+<table cellpadding="0" cellspacing="0" width="100%" height="100%" style="border: solid 1px #000000;">
     <tr>
-        <td style="font-size: 30px; width:250px; height:50px; text-align:center;">{{name}}</td>
+        <td style="font-size: 30px; width:10%; height:6%; text-align:center;">{{name}}</td>
         <td>
             <button *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()">Zufälligen Startspieler wählen</button>
             <button *ngIf="isOwnTurn()" (click)="field.gameField.nextPlayer()">Zug beenden</button>
@@ -10,11 +10,11 @@
             <button (click)="addConnection()">Erneut verbinden ...</button><br>
             <ng-container *ngFor="let p of field.gameField.allActivePlayers">&nbsp;<a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name"> {{p.name}} </a></ng-container>
         </td>
-        <td style="width:400px;"><mrn-chat-box></mrn-chat-box></td>
+        <td style="width:4%;"><mrn-chat-box></mrn-chat-box></td>
     </tr>
-    <tr>
-        <td rowspan="2">
-            <table cellpadding="0" cellspacing="0" style="border: solid 1px #000000;">
+    <tr valign="bottom">
+        <td rowspan="2" height="100%">
+            <table cellpadding="0" cellspacing="0" style="width:250px;">
                 <tr>
                     <td colspan="6" style="text-align: center;"><mrn-card-details></mrn-card-details></td>
                 </tr>
@@ -45,7 +45,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6">
+                    <td colspan="6" style="text-align: center;">
                             <button (click)="this.createToken()">Token erstellen</button>
                             <button (click)="this.untapAll()">Alles enttappen</button><br>
                             ID: {{id}}
@@ -53,20 +53,22 @@
                 </tr>
             </table>
         </td>
-        <td colspan="2">
-            <div style="width: 1000px; height:300px; padding: 0px;margin-bottom: 0px;overflow-y: auto;border: 1px solid #DDD;overflow-x: auto;min-height: 0.01%;">
-                <table cellpadding="0" cellspacing="0" width="{{playerCount}}%">
-                    <tr>
-                        <td style="width: 1000px;" *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
+        <td colspan="2" width="100%" height="47%" style="background-color: #FFFFFF;">
+            <div width="100%" style="height: 100%; padding: 0px; margin-bottom: 0px; overflow-y: auto; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%;">
+                <table cellpadding="0" cellspacing="0" width="{{opponentTableWidth}}%">
+                    <tr valign="top">
+                        <td width="5000" *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
                     </tr>
                 </table>      
             </div>
         </td>
     </tr>
     <tr>
-        <td colspan="2">
-            <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
-            <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
+        <td colspan="2" width="100%" height="47%" style="background-color: #FFFFFF;">
+            <div width="100%" style="height:100%; padding: 0px;margin-bottom: 0px;overflow-y: auto; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%;">
+                <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
+                <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
+            </div>
         </td>
     </tr>
 </table>

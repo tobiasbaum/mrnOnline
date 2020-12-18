@@ -167,9 +167,8 @@ export class SelfPlayerComponent implements OnInit {
       this.field.gameField.connectToOtherPlayer(other);
     }
   }
-  
 
-  get playerCount(): number {
+  get opponentTableWidth(): number {
     return (this.field.gameField.allActivePlayers.length - 1) * 100;
   }
 }
