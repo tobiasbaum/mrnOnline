@@ -2,7 +2,7 @@
     <tr>
         <td style="font-size: 30px; width:10%; height:6%; text-align:center; color:#FFFFFF;"><b>{{name}}</b></td>
         <td>
-            <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[20]</div></a>&nbsp;</ng-container>
+            <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[{{p.lifes}}]</div></a>&nbsp;</ng-container>
             <input type="button" *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()"  style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/start_30x30.png')" title="zufälligen Startspieler bestimmen"/>
             <input type="button" *ngIf="isOwnTurn()" (click)="field.gameField.nextPlayer()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/end_turn_30x30.png')" title="Zug beenden"/>
             &nbsp;
@@ -62,11 +62,12 @@
                         </div>                            
                     </td>
                 </tr>
-                <tr>
-                    <td colspan="6" style="height: 32px; line-height: 32px; font-size: 12px;">
+                <tr valign="top">
+                    <td colspan="6" style="height: 32px;">
                             <input type="button" (click)="this.createToken()" style="width:32px; height:32px; position: absolute; margin-left: 154px; background-image:url('./assets/add_token_30x30.png')" title="Token erstellen" />
                             <input type="button" (click)="this.untapAll()" style="width:32px; height:32px; position: absolute; margin-left: 188px; background-image:url('./assets/untap_all_30x30.png')" title="Alles enttappen" />
-                            ID: {{id}}
+                            <input type="button" (click)="this.copyID()" style="width:32px; height:32px; position: absolute; margin-left: 2px; background-image:url('./assets/copy_id_30x30.png')" title="ID kopieren" />
+                            <div style="width: max-content; height: 32px; position:relative; margin-left: 36px; font-weight: bold; font-size: 12px; line-height: 32px;">{{id}}</div>
                     </td>
                 </tr>
             </table>

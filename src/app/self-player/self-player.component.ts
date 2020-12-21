@@ -172,4 +172,9 @@ export class SelfPlayerComponent implements OnInit {
     return (this.field.gameField.allActivePlayers.length - 1) * 100;
   }
 
+  copyID() {
+    navigator.clipboard.writeText(this.id);
+    alert('ID' + this.id + 'wurde in die Zwischenablage kopiert');
+  }
+
 }
