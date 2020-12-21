@@ -41,7 +41,20 @@ a.playerLink {
     text-align: center;
 }
 
+td.selfName {
+    font-size: 30px; 
+    width:10%;
+    height:6%;
+    text-align:center;
+    color: white;
+}
+
+td.selfName.selfActive {
+    color: red;
+}
+
 a.activePlayer {
+    border: dashed 1px #000000;
     animation-duration: 0.7s;
     animation-name: showActive;
     animation-iteration-count: 2;

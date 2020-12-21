@@ -1,6 +1,6 @@
 <table cellpadding="0" cellspacing="0" width="100%" height="100%" style="border: solid 1px #000000;">
     <tr>
-        <td style="font-size: 30px; width:10%; height:6%; text-align:center; color:#FFFFFF;"><b>{{name}}</b></td>
+        <td class="selfName" [class.selfActive]="isOwnTurn()"><b>{{name}}</b></td>
         <td>
             <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[{{p.lifes}}]</div></a>&nbsp;</ng-container>
             <input type="button" *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()"  style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/start_30x30.png')" title="zufälligen Startspieler bestimmen"/>
