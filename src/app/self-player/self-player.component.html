@@ -1,14 +1,18 @@
 <table cellpadding="0" cellspacing="0" width="100%" height="100%" style="border: solid 1px #000000;">
     <tr>
-        <td style="font-size: 30px; width:10%; height:6%; text-align:center;">{{name}}</td>
+        <td style="font-size: 30px; width:10%; height:6%; text-align:center; color:#FFFFFF;"><b>{{name}}</b></td>
         <td>
-            <button *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()">Zufälligen Startspieler wählen</button>
-            <button *ngIf="isOwnTurn()" (click)="field.gameField.nextPlayer()">Zug beenden</button>
-            <button (click)="dice(6)">Würfel 6</button><button (click)="diceX()">Würfel X ...</button>
-            <button (click)="randomOpponent()">Würfel Gegner</button>
-            <button (click)="endGameForPlayer()">Spieler aus Spiel nehmen ...</button>
-            <button (click)="addConnection()">Erneut verbinden ...</button><br>
-            <ng-container *ngFor="let p of field.gameField.allActivePlayers">&nbsp;<a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name"> {{p.name}} </a></ng-container>
+            <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[20]</div></a>&nbsp;</ng-container>
+            <input type="button" *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()"  style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/start_30x30.png')" title="zufälligen Startspieler bestimmen"/>
+            <input type="button" *ngIf="isOwnTurn()" (click)="field.gameField.nextPlayer()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/end_turn_30x30.png')" title="Zug beenden"/>
+            &nbsp;
+            <input type="button" (click)="dice(6)" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/wuerfel_6_30x30.png')" title="mit 6er Würfel würfeln"/>
+            <input type="button" (click)="diceX()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/wuerfel_x_30x30.png')" title="mit Xer Würfel würfeln"/>
+            <input type="button" (click)="randomOpponent()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/wuerfel_gegner_30x30.png')" title="zufälligen Gegner würfeln"/>
+            &nbsp;
+            <input type="button" (click)="endGameForPlayer()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/drop_player_30x30.png')" title="Spieler aus Spiel nehmen"/>
+            <input type="button" (click)="addConnection()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/reconnect_30x30.png')" title="erneut verbinden"/>
+            
         </td>
         <td style="width:4%;"><mrn-chat-box></mrn-chat-box></td>
     </tr>
@@ -18,36 +22,50 @@
                 <tr>
                     <td colspan="6" style="text-align: center;"><mrn-card-details></mrn-card-details></td>
                 </tr>
-                <tr>
-                    <td rowspan="2" width="25%" height="64" style="font-size:40px; text-align: center;">{{this.lifes}}</td>
-                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.increaseLifes()">+</button></td>
-                    <td width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.multiLifeIncrease()">+X</button></td>
-                    <td rowspan="2" width="25%" style="font-size:40px; text-align: center;">PC</td>
-                    <td width="12.5%" style="font-size:20px; text-align: center;">+</td>
-                    <td width="12.5%" style="font-size:20px; text-align: center;">+X</td>
-                </tr>
-                <tr>
-                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.decreaseLifes()">-</button></td>
-                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;"><button (click)="this.multiLifeDecrease()">-X</button></td>
-                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;">-</td>
-                    <td height="32" width="12.5%" style="font-size:20px; text-align: center;">-X</td>
-                </tr>
-                <tr>
-                    <td width="50%" colspan="3">
-                            <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA,EX,LI'" [collapsed]="true"></mrn-card-collection>
-                            <mrn-card-collection *ngIf="this.exile.size > 0" [collection]="this.exile" name="Aus dem Spiel" [act]="'GR'" [collapsed]="true"></mrn-card-collection>
+                <tr valign="top">
+                    <td rowspan="2" style="width:63px; font-size:40px; text-align: center;">PC</td>
+                    <td style="width:31px;font-size:20px; text-align: center;">+</td>
+                    <td style="width:31px;font-size:20px; text-align: center;">+X</td>
+                    <td rowspan="2" style="width:63px; height:64px; font-size:40px; text-align: center;">
+                        <div style="width: 58px; height: 57px; text-align: center; position: absolute; background-color: #FFFFFF;border: solid 1px #000000; margin-left: 2px;">
+                            <div style="width: 60px; text-align: center; position:absolute; margin-top: 6px;">
+                                {{this.lifes}}
+                            </div>
+                        </div>
                     </td>
-                    <td width="50%" colspan="3">
-                            {{this.librarySize()}} Karten<br>
-                            <button (click)="this.drawCard()">Karte ziehen</button>
-                            <button (click)="this.openLibrary()">Bibliothek öffnen</button>
-                            <button (click)="this.shuffleLibrary()">Bibliothek mischen</button>
+                    <td style="width:31px; height: 32px;text-align: center;"><input type="button" (click)="this.increaseLifes()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/add_life_25x25.png')" title="Lebenpunkte um 1 erhöhen" /></td>
+                    <td style="width:31px; text-align: center;"><input type="button" (click)="this.multiLifeIncrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/add_x_life_25x25.png')" title="Lebenspunkte um X erhöhen" /></td>                  
+                </tr>
+                <tr>
+                    <td style="width:31px; font-size:20px; text-align: center;">-</td>
+                    <td style="width:31px; font-size:20px; text-align: center;">-X</td>
+                    <td style="width:31px; height: 32px; font-size:20px; text-align: center;"><input type="button" (click)="this.decreaseLifes()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/drop_life_25x25.png')" title="Lebenpunkte um 1 verringern" />
+                    <td style="width:31px; font-size:20px; text-align: center;"><input type="button" (click)="this.multiLifeDecrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/drop_x_life_25x25.png')" title="Lebenpunkte um X verringern" />               
+                </tr>
+                <tr>
+                    <td colspan="3" style="width:125px;">
+                        <div style="width: 120px; height: 168px; text-align: center; position:relative; background-color: #C4C4C4; margin-bottom: 0px; margin-left: 2px;">
+                            <div style="width: 120px; text-align: center; position:absolute;">
+                                <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [act]="'PL,PT,HA,EX,LI'" [collapsed]="true"></mrn-card-collection>
+                                <mrn-card-collection *ngIf="this.exile.size > 0" [collection]="this.exile" name="Aus dem Spiel" [act]="'GR'" [collapsed]="true"></mrn-card-collection>  
+                            </div>
+                        </div>            
+                    </td>
+                    <td colspan="3" style="width:125px;">
+                        <div style="width: 120px; height: 168px; position:relative; background-image:url('./assets/magic_card_back.jpg'); margin-bottom: 0px; margin-left: 2px;">
+                            <div style="width: 120px; position:absolute; color: #FFFFFF;">
+                                <input type="text" style="width:30px; height:30px; margin-left:27px; margin-top:100px; padding:0px; position: absolute; color: #00FF00; text-align: center; font-weight: bold; font-size: 15px; background-image:url('./assets/card_count_30x30.png')" value="{{this.librarySize()}}" title="{{this.librarySize()}} Karten in der Bibliothek" readonly />
+                                <input type="button" (click)="this.drawCard()" style="width:32px; height:32px; position: absolute; margin-left: 61px; margin-top: 100px; background-image:url('./assets/draw_card_30x30.png')" title="Karte ziehen"/>
+                                <input type="button" (click)="this.openLibrary()" style="width:32px; height:32px; position: absolute; margin-left: 27px; margin-top: 66px; background-image:url('./assets/search_library_30x30.png')" title="Bibliothek durchsuchen"/>
+                                <input type="button" (click)="this.shuffleLibrary()" style="width:32px; height:32px; position: absolute; margin-left: 61px; margin-top: 66px; background-image:url('./assets/shuffle_library_30x30.png')" title="Bibliothek mischen"/>    
+                            </div>
+                        </div>                            
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="text-align: center;">
-                            <button (click)="this.createToken()">Token erstellen</button>
-                            <button (click)="this.untapAll()">Alles enttappen</button><br>
+                    <td colspan="6" style="height: 32px; line-height: 32px; font-size: 12px;">
+                            <input type="button" (click)="this.createToken()" style="width:32px; height:32px; position: absolute; margin-left: 154px; background-image:url('./assets/add_token_30x30.png')" title="Token erstellen" />
+                            <input type="button" (click)="this.untapAll()" style="width:32px; height:32px; position: absolute; margin-left: 188px; background-image:url('./assets/untap_all_30x30.png')" title="Alles enttappen" />
                             ID: {{id}}
                     </td>
                 </tr>

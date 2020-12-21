@@ -83,21 +83,29 @@ img.card {
 .dropdown-content {
     display: none;
     position: absolute;
+    padding: 0px;
+    margin:0px;
     top: 20px;
     left: 55px;
     background-color: #f1f1f1;
-    min-width: 160px;
+    width: max-content;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
 }
 /* Links inside the dropdown */
 .dropdown-content a {
     color: black;
-    padding: 5px 5px;
+    padding: 0px;
+    margin: 0px;
     text-decoration: none;
     display: block;
+    line-height: 30px;
+    height: 30px;
 }
 /* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #ddd;}
+.dropdown-content a:hover {
+    background-color: #ddd;
+    cursor: pointer;
+}
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {display: block;}

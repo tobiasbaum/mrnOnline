@@ -171,4 +171,5 @@ export class SelfPlayerComponent implements OnInit {
   get opponentTableWidth(): number {
     return (this.field.gameField.allActivePlayers.length - 1) * 100;
   }
+
 }

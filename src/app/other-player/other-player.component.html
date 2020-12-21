@@ -2,19 +2,29 @@
         <tr valign="top">
             <td rowspan="2" style="text-align:right">
                 <div style="width:250px; float: right;">
-                    <table cellpadding="0" cellspacing="0" style="width:250px; border: solid 1px #000000;">
+                    <table cellpadding="0" cellspacing="0" style="width:250px; border: solid 1px #000000; background-color: #00FF00;">
                         <tr>
                             <td width="125" colspan="2">
-                                {{librarySize}} Karten
+                                <div style="width: 120px; height: 168px; text-align: center; position:relative; background-color: #C4C4C4; margin-top: 0px; margin-left:2px;">
+                                    <div style="width: 120px; text-align: center; position:absolute;">
+                                        Bibliothek:<br>
+                                        {{librarySize}} Karten    
+                                    </div>
+                                </div>
                             </td>
                             <td width="125" colspan="2">
-                                <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>
+                                <div style="width: 120px; height: 168px; text-align: center; position:relative; background-color: #C4C4C4; margin-top: 0px; margin-left:2px;">
+                                    <div style="width: 120px; text-align: center; position:absolute;">
+                                        <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>    
+                                    </div>
+                                </div>
+                                
                             </td>
                         </tr>
                         <tr>
-                            <td width="62" height="65" style="font-size: 40px;">PC</td>
-                            <td colspan="2" width="125" height="65" style="text-align: center; font-size: 30px;">{{name}}</td>
-                            <td width="62" height="65" style="font-size: 40px;">{{lifes}}</td>
+                            <td width="62" height="65" style="width: 62px; height: 65px; text-align: center; font-size: 40px;">{{lifes}}</td>
+                            <td colspan="2" width="125" height="65" style="text-align: center; "><div style="width:125px; height: 65px; font-size: 30px; line-height: 65px; overflow-x: hidden;">{{name}}</div></td>
+                            <td width="62" height="65" style="width: 62px; height: 65px; text-align: center; font-size: 40px;">PC</td>
                         </tr>
                     </table>
                 </div>

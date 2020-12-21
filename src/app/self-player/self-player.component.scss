@@ -28,7 +28,17 @@ legend.turn {
 }
 
 a.playerLink {
+    display: inline-block;
+    width:fit-content;
+    height:fit-content;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    border: solid 1px #000000;
+    padding: 3px;
     color: white;
+    text-decoration: none;
+    font-size: 16px;
+    text-align: center;
 }
 
 a.activePlayer {
@@ -47,4 +57,24 @@ a.activePlayer {
     100% {
         filter: none;
     }
+}
+
+button {
+    background-color: #FFFFFF;
+    border: solid 1px #000000;
+}
+
+button:hover {
+    background-color: #C4C4C4;
+    cursor: pointer; 
+}
+
+input {
+    background-color: #FFFFFF;
+    border: solid 1px #000000;
+}
+
+input:hover {
+    background-color: #C4C4C4;
+    cursor: pointer; 
 }

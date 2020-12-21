@@ -21,6 +21,15 @@ export class ChatBoxComponent implements OnInit, AfterViewChecked {
       this.destroy);
   }
 
+  public large: boolean = false;
+  public changeIcon: boolean = false;
+
+  toggleHeight ()
+  {
+    this.large = !this.large;
+    this.changeIcon = !this.changeIcon;
+  } 
+
   ngOnInit(): void {
   }
 
