@@ -439,7 +439,7 @@ export class CardCache {
   
   }
   
-  class SelfPlayer implements PlayerData {
+  class SelfPlayer implements CommonPlayer {
       public readonly id: string;
       public readonly name: string;
       private cardCache: CardCache;
@@ -769,8 +769,12 @@ export class CardCache {
     color: string,
     orderNumber: number;
   }
+
+  interface CommonPlayer extends PlayerData {
+    lifes: number;
+  }
   
-  export class OtherPlayer implements PlayerData {
+  export class OtherPlayer implements CommonPlayer {
     private subject: Subject<void> = new Subject();
 
     constructor(public name: string, public db: DistributedDatabaseSystem, private cardCache: CardCache) {
@@ -909,7 +913,7 @@ export class CardCache {
       }
     }
 
-    get allActivePlayers(): PlayerData[] {
+    get allActivePlayers(): CommonPlayer[] {
       let ret = [this.myself, ...this.others].filter(x => x.isInGame);
       ret.sort((a, b) => a.orderNumber - b.orderNumber);
       return ret;
