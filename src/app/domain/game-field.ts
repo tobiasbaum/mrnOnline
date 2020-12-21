@@ -445,6 +445,7 @@ export class CardCache {
       private cardCache: CardCache;
       private localLibrary: LocalLibrary;
       public lifes: number;
+      public poisonCount: number;
       public readonly color: string;
       public readonly db: DistributedDatabaseSystem;
       public readonly orderNumber: number;
@@ -460,6 +461,7 @@ export class CardCache {
       if (clean) {
         this.db.put('librarySizes', this.name, this.library.size);
         this.db.put('lifes', this.name, 20);
+        this.db.put('poisonCount', this.name, 0);
         let h = Math.floor(Math.random() * 72) * 5;
         let s = 85 + Math.floor(Math.random() * 10);
         let l = 35 + Math.floor(Math.random() * 10);
@@ -471,6 +473,7 @@ export class CardCache {
         this.orderNumber = playerData.orderNumber;
       }
       this.lifes = this.db.get('lifes', this.name);
+      this.poisonCount = this.db.get('poisonCount', this.name);
 
       this.db.on(['add', 'update'], 'endedPlayers', false, (name: string, dta: boolean) => { 
         if (dta) {
@@ -582,6 +585,17 @@ export class CardCache {
         this.sendNotification('erhöht Lebenspunkte um ' + diff + ' auf ' + this.lifes);
       } else {
         this.sendNotification('verringert Lebenspunkte um ' + -diff + ' auf ' + this.lifes);
+      }
+      this.subject.next();
+    }
+  
+    changePoisonCount(diff: number) {
+      this.poisonCount += diff;
+      this.db.put('poisonCount', this.name, this.poisonCount);
+      if (diff > 0) {
+        this.sendNotification('erhöht Anzahl Giftmarken um ' + diff + ' auf ' + this.poisonCount);
+      } else {
+        this.sendNotification('verringert Anzahl Giftmarken um ' + -diff + ' auf ' + this.poisonCount);
       }
       this.subject.next();
     }
@@ -772,6 +786,7 @@ export class CardCache {
 
   interface CommonPlayer extends PlayerData {
     lifes: number;
+    poisonCount: number;
   }
   
   export class OtherPlayer implements CommonPlayer {
@@ -811,6 +826,10 @@ export class CardCache {
   
     get lifes(): number {
       return this.db.get('lifes', this.name);
+    }
+  
+    get poisonCount(): number {
+      return this.db.get('poisonCount', this.name);
     }
   
     get handSize(): number {

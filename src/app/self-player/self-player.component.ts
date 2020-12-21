@@ -50,6 +50,10 @@ export class SelfPlayerComponent implements OnInit {
     return this.field.gameField.myself.lifes;
   }
 
+  get poisonCount(): number {
+    return this.field.gameField.myself.poisonCount;
+  }
+
   get hand(): CardBag {
     return this.field.gameField.myself.hand;
   }
@@ -97,6 +101,28 @@ export class SelfPlayerComponent implements OnInit {
     let count = prompt('Anzahl zusätzlicher Leben');
     if (count) {
       this.field.gameField.myself.changeLifeCount(Number.parseInt(count));
+    }
+  }
+
+  decreasePoisonCount() {
+    this.field.gameField.myself.changePoisonCount(-1);
+  }
+
+  increasePoisonCount() {
+    this.field.gameField.myself.changePoisonCount(1);
+  }
+
+  multiPoisonDecrease() {
+    let count = prompt('Anzahl verlorener Giftmarken');
+    if (count) {
+      this.field.gameField.myself.changePoisonCount(-Number.parseInt(count));
+    }
+  }
+
+  multiPoisonIncrease() {
+    let count = prompt('Anzahl zusätzlicher Giftmarken');
+    if (count) {
+      this.field.gameField.myself.changePoisonCount(Number.parseInt(count));
     }
   }
 

@@ -37,6 +37,10 @@ export class OtherPlayerComponent implements OnInit {
     return this.me.lifes;
   }
 
+  get poisonCount(): number {
+    return this.me.poisonCount;
+  }
+
   get handSize(): number {
     return this.me.handSize;
   }

@@ -23,24 +23,30 @@
                     <td colspan="6" style="text-align: center;"><mrn-card-details></mrn-card-details></td>
                 </tr>
                 <tr valign="top">
-                    <td rowspan="2" style="width:63px; font-size:40px; text-align: center;">PC</td>
-                    <td style="width:31px;font-size:20px; text-align: center;">+</td>
-                    <td style="width:31px;font-size:20px; text-align: center;">+X</td>
+                    <td rowspan="2" style="width:63px; font-size:40px; text-align: center;">
+                        <div style="width: 58px; height: 57px; text-align: center; position: absolute; background-color: #9df34c;border: solid 1px #000000; margin-left: 2px;">
+                            <div style="width: 60px; text-align: center; position:absolute; margin-top: 6px;" title="Anzahl Giftmarken">
+                                {{this.poisonCount}}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="width:31px;font-size:20px; text-align: center;"><input type="button" (click)="this.increasePoisonCount()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/add_life_25x25.png')" title="Giftmarken um 1 erhöhen" /></td>
+                    <td style="width:31px;font-size:20px; text-align: center;"><input type="button" (click)="this.multiPoisonIncrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/add_x_life_25x25.png')" title="Giftmarken um X erhöhen" /></td>
                     <td rowspan="2" style="width:63px; height:64px; font-size:40px; text-align: center;">
                         <div style="width: 58px; height: 57px; text-align: center; position: absolute; background-color: #FFFFFF;border: solid 1px #000000; margin-left: 2px;">
-                            <div style="width: 60px; text-align: center; position:absolute; margin-top: 6px;">
+                            <div style="width: 60px; text-align: center; position:absolute; margin-top: 6px;" title="Lebenspunkte">
                                 {{this.lifes}}
                             </div>
                         </div>
                     </td>
-                    <td style="width:31px; height: 32px;text-align: center;"><input type="button" (click)="this.increaseLifes()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/add_life_25x25.png')" title="Lebenpunkte um 1 erhöhen" /></td>
-                    <td style="width:31px; text-align: center;"><input type="button" (click)="this.multiLifeIncrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/add_x_life_25x25.png')" title="Lebenspunkte um X erhöhen" /></td>                  
+                    <td style="width:31px; height: 32px;text-align: center;"><input type="button" (click)="this.increaseLifes()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/add_life_25x25.png')" title="Lebenspunkte um 1 erhöhen" /></td>
+                    <td style="width:31px; text-align: center;"><input type="button" (click)="this.multiLifeIncrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/add_x_life_25x25.png')" title="Lebenspunkte um X erhöhen" /></td>
                 </tr>
                 <tr>
-                    <td style="width:31px; font-size:20px; text-align: center;">-</td>
-                    <td style="width:31px; font-size:20px; text-align: center;">-X</td>
-                    <td style="width:31px; height: 32px; font-size:20px; text-align: center;"><input type="button" (click)="this.decreaseLifes()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/drop_life_25x25.png')" title="Lebenpunkte um 1 verringern" />
-                    <td style="width:31px; font-size:20px; text-align: center;"><input type="button" (click)="this.multiLifeDecrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/drop_x_life_25x25.png')" title="Lebenpunkte um X verringern" />               
+                    <td style="width:31px; font-size:20px; text-align: center;"><input type="button" (click)="this.decreasePoisonCount()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/drop_life_25x25.png')" title="Giftmarken um 1 verringern" /></td>
+                    <td style="width:31px; font-size:20px; text-align: center;"><input type="button" (click)="this.multiPoisonDecrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/drop_x_life_25x25.png')" title="Giftmarken um X verringern" /></td>
+                    <td style="width:31px; height: 32px; font-size:20px; text-align: center;"><input type="button" (click)="this.decreaseLifes()" style="width:27px; height:27px; margin-left: 1px; background-image:url('./assets/drop_life_25x25.png')" title="Lebenspunkte um 1 verringern" /></td>
+                    <td style="width:31px; font-size:20px; text-align: center;"><input type="button" (click)="this.multiLifeDecrease()" style="width:27px; height:27px; margin-left: 0px; background-image:url('./assets/drop_x_life_25x25.png')" title="Lebenspunkte um X verringern" /></td>
                 </tr>
                 <tr>
                     <td colspan="3" style="width:125px;">
