@@ -8,13 +8,20 @@ div.chatbox.large {
     height: 350px;
 }
 
+input.chatButton {
+    width:32px; 
+    height:22px; 
+    display: block; 
+    background-image:url('chat_30x20.png');
+}
+
 input.chatboxButton {
     width:32px;
     height:22px;
     display: block;
     background-color: #FFFFFF;
     border: solid 1px #000000;
-    background-image:url('/assets/expand_30x20.png');
+    background-image:url('expand_30x20.png');
 }
 
 input.chatboxButton:hover {
@@ -28,7 +35,7 @@ input.chatboxButton.changeIcon {
     display: block;
     background-color: #FFFFFF;
     border: solid 1px #000000;
-    background-image:url('/assets/impand_30x20.png');
+    background-image:url('impand_30x20.png');
 }
 
 input.chatboxButton.changeIcon:hover {

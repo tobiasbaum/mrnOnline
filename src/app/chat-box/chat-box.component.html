@@ -1,7 +1,7 @@
 <table cellpadding="0" cellspacing="0" style="width: 500px; margin-top: 3px; margin-bottom: 3px; background-color: #FFFFFF; border: solid 1px #000000">
     <tr valign="top">
         <td style="width:max-content;">
-            <input type="button" (click)="this.sendMessage()" style="width:32px; height:22px; display: block; background-image:url('./assets/chat_30x20.png')" title="chatten" />
+            <input type="button" (click)="this.sendMessage()" class="chatButton" title="chatten" />
             <input type="button" (click)="toggleHeight()" class="chatboxButton" id="chatboxButton" [class.changeIcon]="this.changeIcon" />
         </td>
         <td>
