@@ -204,7 +204,7 @@ export class SelfPlayerComponent implements OnInit {
   }
 
   get tableWidth(): number {
-    return window.innerWidth - 2;
+    return window.innerWidth - 22;
   }
 
   get tableHeight(): number {
@@ -212,7 +212,7 @@ export class SelfPlayerComponent implements OnInit {
   }
 
 get headerWidth(): number {
-  return (window.innerWidth - (250 + 502));
+  return ((window.innerWidth - (250 + 502)) - 20);
 }
 
 get mainHeight(): number {
@@ -220,7 +220,7 @@ get mainHeight(): number {
 }
 
 get gamefieldWidth(): number {
-return window.innerWidth - 252;
+return window.innerWidth - 272;
 }
 
 get gamefieldHeight(): number {
@@ -228,7 +228,7 @@ get gamefieldHeight(): number {
 }
 
 get opponentTableWidth(): number {
-  return ((this.field.gameField.allActivePlayers.length - 1) * (window.innerWidth - 252));
+  return ((this.field.gameField.allActivePlayers.length - 1) * (window.innerWidth - 272));
 }
 
 }
