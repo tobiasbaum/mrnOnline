@@ -16,7 +16,7 @@ class CardType {
     if (img) {
       this.img = img;
     } else {
-      this.img = 'data:image/svg+xml;base64,' + btoa(this.createSvg(name.replace(/[^a-zA-Z0-9 ]/, '')));
+      this.img = 'http://tobias-wustrack.de/token.php?token_data=' + name.replace(/[^a-zA-Z0-9 §]/, '');
     }
   }
 
