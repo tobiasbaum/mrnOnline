@@ -70,6 +70,6 @@ export class OtherPlayerComponent implements OnInit {
   }
 
   get gamefieldWidth(): number {
-    return window.innerWidth - 254;
+    return window.innerWidth - 274;
     }
 }

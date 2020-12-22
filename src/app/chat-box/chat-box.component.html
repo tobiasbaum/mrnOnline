@@ -1,10 +1,10 @@
-<table cellpadding="0" cellspacing="0" style="width: 500px; margin-top: 3px; margin-bottom: 3px; background-color: #FFFFFF; border: solid 1px #000000">
+<table cellpadding="0" cellspacing="0" style="width: 500px; margin-top: 3px; margin-bottom: 3px; float: right; background-color: #FFFFFF; border: solid 1px #000000">
     <tr valign="top">
-        <td style="width:max-content;">
+        <td style="width: 34px; ">
             <input type="button" (click)="this.sendMessage()" class="chatButton" title="chatten" />
             <input type="button" (click)="toggleHeight()" class="chatboxButton" id="chatboxButton" [class.changeIcon]="this.changeIcon" />
         </td>
-        <td>
+        <td style="width: 466px; ">
             <div class="chatbox" id="chatbox" [class.large]="this.large">
                 <div *ngFor="let m of messages">
                     <ng-container *ngIf="m.tr === ''">
