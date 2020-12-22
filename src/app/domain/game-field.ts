@@ -916,7 +916,8 @@ export class CardCache {
     registerPlayerChangeHandler(handler: Function) {
       this.db.on('add', 'currentPlayer', true, handler);
       this.db.on('update', 'currentPlayer', false, handler);
-  }
+      this.db.on('add', 'playerData', true, handler);
+    }
 
   connectToOtherPlayer(id: string) {
       this.db.connectToNode(id);
