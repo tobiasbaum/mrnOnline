@@ -82,6 +82,10 @@ export class SelfPlayerComponent implements OnInit {
     this.field.gameField.myself.drawCard();
   }
 
+  discardAtRandom() {
+    this.field.gameField.myself.discardAtRandom();
+  }
+
   decreaseLifes() {
     this.field.gameField.decreaseLifes();
   }

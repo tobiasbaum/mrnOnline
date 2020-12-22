@@ -606,6 +606,16 @@ export class CardCache {
       this.subject.next();
     }
 
+    discardAtRandom() {
+      let h = this.hand;
+      if (h.size == 0) {
+        return;
+      }
+      let card = h.cards[Math.floor(Math.random() * h.size)];
+      this.addToGraveyard(card);
+      this.subject.next();
+    }
+
     private addToGraveyard(card: Card) {
       card.modifiers.forEach(m => this.addToGraveyard(m));
 
