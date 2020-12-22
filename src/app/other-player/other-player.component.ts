@@ -37,6 +37,10 @@ export class OtherPlayerComponent implements OnInit {
     return this.me.lifes;
   }
 
+  get color(): string {
+    return this.me.color;
+  }
+
   get poisonCount(): number {
     return this.me.poisonCount;
   }
@@ -65,4 +69,7 @@ export class OtherPlayerComponent implements OnInit {
     return this.field.gameField.currentPlayerName === this.me.name;
   }
 
+  get gamefieldWidth(): number {
+    return window.innerWidth - 254;
+    }
 }

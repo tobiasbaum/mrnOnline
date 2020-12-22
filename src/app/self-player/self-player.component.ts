@@ -194,13 +194,37 @@ export class SelfPlayerComponent implements OnInit {
     }
   }
 
-  get opponentTableWidth(): number {
-    return (this.field.gameField.allActivePlayers.length - 1) * 100;
-  }
-
   copyID() {
     navigator.clipboard.writeText(this.id);
     alert('ID' + this.id + 'wurde in die Zwischenablage kopiert');
   }
+
+  get tableWidth(): number {
+    return window.innerWidth - 2;
+  }
+
+  get tableHeight(): number {
+    return window.innerHeight - 1;
+  }
+
+get headerWidth(): number {
+  return (window.innerWidth - (250 + 502));
+}
+
+get mainHeight(): number {
+  return window.innerHeight - 52;
+}
+
+get gamefieldWidth(): number {
+return window.innerWidth - 252;
+}
+
+get gamefieldHeight(): number {
+  return (((window.innerHeight - 54)/2)-2);
+}
+
+get opponentTableWidth(): number {
+  return ((this.field.gameField.allActivePlayers.length - 1) * (window.innerWidth - 252));
+}
 
 }
