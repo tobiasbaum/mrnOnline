@@ -460,6 +460,7 @@ export class CardCache {
       this.localLibrary = localLibrary;
       if (clean) {
         this.db.put('librarySizes', this.name, this.library.size);
+        this.db.put('handSizes', this.name, this.hand.size);
         this.db.put('lifes', this.name, 20);
         this.db.put('poisonCount', this.name, 0);
         let h = Math.floor(Math.random() * 72) * 5;
