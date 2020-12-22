@@ -45,7 +45,22 @@
                                 </div>
                             </td>
                             <td width="62" height="65" style="width: 62px; height: 65px; text-align: center; ">
-                                <div style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                <div *ngIf="handSize > 2 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                    <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
+                                        {{handSize}}
+                                    </div>
+                                </div>
+                                <div *ngIf="handSize == 2 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_2_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                    <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
+                                        {{handSize}}
+                                    </div>
+                                </div>
+                                <div *ngIf="handSize == 1 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_1_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                    <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
+                                        {{handSize}}
+                                    </div>
+                                </div>
+                                <div *ngIf="handSize == 0 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_0_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
                                     <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
                                         {{handSize}}
                                     </div>
