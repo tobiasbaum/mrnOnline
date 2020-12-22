@@ -196,7 +196,7 @@ export class SelfPlayerComponent implements OnInit {
 
   copyID() {
     navigator.clipboard.writeText(this.id);
-    alert('ID' + this.id + 'wurde in die Zwischenablage kopiert');
+    alert('ID ' + this.id + 'wurde in die Zwischenablage kopiert');
   }
 
   get tableWidth(): number {
