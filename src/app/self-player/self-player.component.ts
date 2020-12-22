@@ -212,7 +212,7 @@ export class SelfPlayerComponent implements OnInit {
   }
 
 get headerWidth(): number {
-  return ((window.innerWidth - (250 + 502)) - 20);
+  return ((window.innerWidth - (250 + 502 + 222)) - 20);
 }
 
 get mainHeight(): number {

@@ -2,7 +2,12 @@
     <tr>
         <td style="width: 250px; height:46px; font-size: 30px; text-align:center; " class="selfName" [class.selfActive]="isOwnTurn()"><b>{{name}}</b></td>
         <td style="width:{{headerWidth}}px; ">
-            <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[{{p.lifes}}]</div></a>&nbsp;</ng-container>
+            <div style="white-space: nowrap; width:{{headerWidth}}px; height: 46px; overflow-x: auto ; overflow-y: hidden; min-width: 0.01%;">
+                <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[{{p.lifes}}]</div></a>&nbsp;</ng-container>
+            </div>
+        </td>
+        <td style="width: 222px; font-size: 12px; ">
+            &nbsp;    
             <input type="button" *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()"  style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/start_30x30.png')" title="zufälligen Startspieler bestimmen"/>
             <input type="button" *ngIf="isOwnTurn()" (click)="field.gameField.nextPlayer()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/end_turn_30x30.png')" title="Zug beenden"/>
             &nbsp;
@@ -70,15 +75,16 @@
                 </tr>
                 <tr valign="top">
                     <td colspan="6" style="height: 32px;">
-                            <input type="button" (click)="this.createToken()" style="width:32px; height:32px; position: absolute; margin-left: 154px; margin-top: 2px; background-image:url('./assets/add_token_30x30.png')" title="Token erstellen" />
-                            <input type="button" (click)="this.untapAll()" style="width:32px; height:32px; position: absolute; margin-left: 188px; margin-top: 2px; background-image:url('./assets/untap_all_30x30.png')" title="Alles enttappen" />
+                            <input type="button" (click)="this.createToken()" style="width:32px; height:32px; position: absolute; margin-left: 171px; margin-top: 2px; background-image:url('./assets/add_token_30x30.png')" title="Token erstellen" />
+                            <input type="button" (click)="this.untapAll()" style="width:32px; height:32px; position: absolute; margin-left: 205px; margin-top: 2px; background-image:url('./assets/untap_all_30x30.png')" title="Alles enttappen" />
                             <input type="button" (click)="this.copyID()" style="width:32px; height:32px; position: absolute; margin-left: 2px; margin-top: 2px; background-image:url('./assets/copy_id_30x30.png')" title="ID kopieren" />
+                            <input type="button" (click)="discardAtRandom()" style="width:32px; height:32px; position: absolute; margin-left: 137px; margin-top: 2px; background-image:url('./assets/drop_at_random_30x30.png')" title="Zufällige Karte von der Hand abwerfen" />
                             <div style="width: max-content; height: 32px; position:relative; margin-left: 36px; margin-top: 2px; font-weight: bold; font-size: 12px; line-height: 32px;">{{id}}</div>
                     </td>
                 </tr>
             </table>
         </td>
-        <td colspan="2" style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px ;">
+        <td colspan="3" style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px ;">
             <div style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px; padding: 0px; margin-bottom: 0px; overflow-y: auto; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <table cellpadding="0" cellspacing="0" style="width: {{opponentTableWidth}}px">
                     <tr valign="top">
@@ -89,10 +95,9 @@
         </td>
     </tr>
     <tr>
-        <td colspan="2" style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px; ">
+        <td colspan="3" style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px; ">
             <div style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px; padding: 0px;margin-bottom: 0px;overflow-y: auto; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
-                <button (click)="discardAtRandom()">Zufällige Karte aus Hand abwerfen</button>
                 <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
             </div>
         </td>
