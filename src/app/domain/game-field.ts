@@ -460,6 +460,7 @@ export class CardCache {
       this.localLibrary = localLibrary;
       if (clean) {
         this.db.put('librarySizes', this.name, this.library.size);
+        this.db.put('handSizes', this.name, this.hand.size);
         this.db.put('lifes', this.name, 20);
         this.db.put('poisonCount', this.name, 0);
         let h = Math.floor(Math.random() * 72) * 5;
@@ -605,6 +606,16 @@ export class CardCache {
       this.subject.next();
     }
 
+    discardAtRandom() {
+      let h = this.hand;
+      if (h.size == 0) {
+        return;
+      }
+      let card = h.cards[Math.floor(Math.random() * h.size)];
+      this.addToGraveyard(card);
+      this.subject.next();
+    }
+
     private addToGraveyard(card: Card) {
       card.modifiers.forEach(m => this.addToGraveyard(m));
 
@@ -649,6 +660,7 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
+      this.db.put('handSizes', this.name, this.hand.size);
       this.sendNotification('spielt ' + this.cardName(cardId) + ' aus');
       this.subject.next();
     }
@@ -666,6 +678,7 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
+      this.db.put('handSizes', this.name, this.hand.size);
       this.sendNotification('spielt ' + this.cardName(cardId) + ' getappt aus');
       this.subject.next();
     }
@@ -692,6 +705,7 @@ export class CardCache {
       }
       this.localLibrary.putOnTop(cardId);
       this.cardCache.setDirty();
+      this.db.put('handSizes', this.name, this.hand.size);
       this.db.put('librarySizes', this.name, this.library.size);
       this.subject.next();
     }

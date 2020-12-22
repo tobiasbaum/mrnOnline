@@ -82,6 +82,10 @@ export class SelfPlayerComponent implements OnInit {
     this.field.gameField.myself.drawCard();
   }
 
+  discardAtRandom() {
+    this.field.gameField.myself.discardAtRandom();
+  }
+
   decreaseLifes() {
     this.field.gameField.decreaseLifes();
   }
@@ -196,7 +200,7 @@ export class SelfPlayerComponent implements OnInit {
 
   copyID() {
     navigator.clipboard.writeText(this.id);
-    alert('ID' + this.id + 'wurde in die Zwischenablage kopiert');
+    alert('ID ' + this.id + 'wurde in die Zwischenablage kopiert');
   }
 
   get tableWidth(): number {
