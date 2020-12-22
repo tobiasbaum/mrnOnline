@@ -649,6 +649,7 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
+      this.db.put('handSizes', this.name, this.hand.size);
       this.sendNotification('spielt ' + this.cardName(cardId) + ' aus');
       this.subject.next();
     }
@@ -666,6 +667,7 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
+      this.db.put('handSizes', this.name, this.hand.size);
       this.sendNotification('spielt ' + this.cardName(cardId) + ' getappt aus');
       this.subject.next();
     }
@@ -692,6 +694,7 @@ export class CardCache {
       }
       this.localLibrary.putOnTop(cardId);
       this.cardCache.setDirty();
+      this.db.put('handSizes', this.name, this.hand.size);
       this.db.put('librarySizes', this.name, this.library.size);
       this.subject.next();
     }
