@@ -220,15 +220,19 @@ get mainHeight(): number {
 }
 
 get gamefieldWidth(): number {
-return window.innerWidth - 272;
+return window.innerWidth - 292;
 }
+
+get gamefieldDivWidth(): number {
+  return window.innerWidth - 272;
+  }
 
 get gamefieldHeight(): number {
   return (((window.innerHeight - 54)/2)-2);
 }
 
 get opponentTableWidth(): number {
-  return ((this.field.gameField.allActivePlayers.length - 1) * (window.innerWidth - 272));
+  return ((this.field.gameField.allActivePlayers.length - 1) * (window.innerWidth - 292));
 }
 
 }

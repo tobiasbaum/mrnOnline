@@ -84,19 +84,19 @@
                 </tr>
             </table>
         </td>
-        <td colspan="3" style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px ;">
-            <div style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px; padding: 0px; margin-bottom: 0px; overflow-y: auto; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
-                <table cellpadding="0" cellspacing="0" style="width: {{opponentTableWidth}}px">
+        <td colspan="3" style="width: {{gamefieldDivWidth}}px; height: {{gamefieldHeight}}px ;">
+            <div style="width: {{gamefieldDivWidth}}px; height: {{gamefieldHeight}}px; padding: 0px; margin-bottom: 0px; overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
+                <table cellpadding="0" cellspacing="0" style="width: {{opponentTableWidth}}px; ">
                     <tr valign="top">
-                        <td style="width: {{gamefieldWidth}}px; " *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
+                        <td id="{{p.id}}" style="width: {{gamefieldWidth}}px; padding-left: 2px; padding-right: 2px; " *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
                     </tr>
                 </table>      
             </div>
         </td>
     </tr>
     <tr>
-        <td colspan="3" style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px; ">
-            <div style="width: {{gamefieldWidth}}px; height: {{gamefieldHeight}}px; padding: 0px;margin-bottom: 0px;overflow-y: auto; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
+        <td colspan="3" style="width: {{gamefieldDivWidth}}px; height: {{gamefieldHeight}}px; ">
+            <div style="width: {{gamefieldDivWidth}}px; height: {{gamefieldHeight}}px; padding: 0px;margin-bottom: 0px;overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
                 <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
             </div>

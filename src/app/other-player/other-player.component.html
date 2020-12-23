@@ -1,76 +1,77 @@
-    <table id="{{id}}" cellpadding="0" cellspacing="0" style="width:{{gamefieldWidth}}px; ">
+    <table cellpadding="0" cellspacing="0" style="width:{{gamefieldWidth}}px; ">
         <tr valign="top">
-            <td rowspan="2" style="width:{{gamefieldWidth}}px; text-align:right">
-                <div style="width:250px; float: right;">
-                    <table cellpadding="0" cellspacing="0" style="width:250px; margin-top: 1px; border: solid 1px #000000; background-color: {{color}};">
-                        <tr valign="top">
-                            <td colspan="2" style="width: 125px;">
-                                <div style="width: 120px; height: 168px; position:relative; text-align:left; background-image:url('./assets/magic_card_back.jpg'); margin-top: 2px; margin-left:2px;">
-                                    <div style="width: 120px; position:absolute; color: #FFFFFF;">
-                                        <input type="text" style="width:30px; height:30px; margin-left:45px; margin-top:76px; padding:0px; position: absolute; color: #FFDF00; text-align: center; font-weight: bold; font-size: 15px; background-image:url('./assets/card_count_30x30.png')" value="{{librarySize}}" title="{{librarySize}} Karten in der Bibliothek" readonly />
+            <td rowspan="2" style="width:{{gamefieldWidth}}px; text-align:right; ">
+                <div>
+                    <div style="width:251px; float: right;">
+                        <table cellpadding="0" cellspacing="0" style="width:250px; margin-top: 1px; border: solid 1px #000000; background-color: {{color}};">
+                            <tr valign="top">
+                                <td colspan="2" style="width: 125px;">
+                                    <div style="width: 120px; height: 168px; position:relative; text-align:left; background-image:url('./assets/magic_card_back.jpg'); margin-top: 2px; margin-left:2px;">
+                                        <div style="width: 120px; position:absolute; color: #FFFFFF;">
+                                            <input type="text" style="width:30px; height:30px; margin-left:45px; margin-top:76px; padding:0px; position: absolute; color: #FFDF00; text-align: center; font-weight: bold; font-size: 15px; background-image:url('./assets/card_count_30x30.png')" value="{{librarySize}}" title="{{librarySize}} Karten in der Bibliothek" readonly />
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td colspan="2" style="width: 125px;">
-                                <div style="width: 120px; height: 168px; text-align: center; position:relative; background-color: #C4C4C4; margin-top: 2px; margin-left:2px;">
-                                    <div style="width: 120px; text-align: center; position:absolute;">
-                                        <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>    
+                                </td>
+                                <td colspan="2" style="width: 125px;">
+                                    <div style="width: 120px; height: 168px; text-align: center; position:relative; background-color: #C4C4C4; margin-top: 2px; margin-left:2px;">
+                                        <div style="width: 120px; text-align: center; position:absolute;">
+                                            <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>    
+                                        </div>
                                     </div>
-                                </div>
-                                
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <td width="62" height="65" style="width: 62px; height: 65px; text-align: center;">
-                                <div  *ngIf="poisonCount == 0" style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF;border: solid 1px #000000; margin-left: 2px; margin-top:3px; ">
-                                    <div style="width: 60px; text-align: center; font-size: 40px; position:absolute; line-height: 58px;" title="Lebenspunkte">
-                                        {{lifes}}
+                                    
+                                </td>
+                            </tr>
+                            <tr valign="top">
+                                <td style="width: 62px; height: 65px; text-align: center;">
+                                    <div  *ngIf="poisonCount == 0" style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF;border: solid 1px #000000; margin-left: 2px; margin-top:3px; ">
+                                        <div style="width: 60px; text-align: center; font-size: 40px; position:absolute; line-height: 58px;" title="Lebenspunkte">
+                                            {{lifes}}
+                                        </div>
                                     </div>
-                                </div>
-                                <div  *ngIf="poisonCount > 0" style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF;border: solid 1px #000000; margin-left: 2px; margin-top:3px; ">
-                                    <div style="width: 60px; text-align: center; font-size: 30px; position:absolute; line-height: 36px;" title="Lebenspunkte">
-                                        {{lifes}}
-                                    </div>
-                                    <div style="width: 60px; text-align: center; margin-top: 32px;  position:absolute; " title="Lebenspunkte">    
-                                        <img src="./assets/snake_grey_20x20.png" />
+                                    <div  *ngIf="poisonCount > 0" style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF;border: solid 1px #000000; margin-left: 2px; margin-top:3px; ">
+                                        <div style="width: 60px; text-align: center; font-size: 30px; position:absolute; line-height: 36px;" title="Lebenspunkte">
+                                            {{lifes}}
+                                        </div>
+                                        <div style="width: 60px; text-align: center; margin-top: 32px;  position:absolute; " title="Lebenspunkte">    
+                                            <img src="./assets/snake_grey_20x20.png" />
+                                        </div>   
+                                        <div style="width: 60px; text-align: center; margin-top: 32px; font-weight: bold; font-size: 16px; line-height: 22px; position:absolute; color:#FF0000; " title="Lebenspunkte">    
+                                            {{poisonCount}}   
+                                        </div>
                                     </div>   
-                                    <div style="width: 60px; text-align: center; margin-top: 32px; font-weight: bold; font-size: 16px; line-height: 22px; position:absolute; color:#FF0000; " title="Lebenspunkte">    
-                                        {{poisonCount}}   
+                                </td>
+                                <td colspan="2" style="width: 125px; height: 65px; text-align: center; ">
+                                    <div style="width:125px; height: 65px; font-size: 30px; line-height: 65px; color:#FFFFFF; overflow-x: hidden;">
+                                        {{name}}
                                     </div>
-                                </div>   
-                            </td>
-                            <td colspan="2" width="125" height="65" style="text-align: center; ">
-                                <div style="width:125px; height: 65px; font-size: 30px; line-height: 65px; color:#FFFFFF; overflow-x: hidden;">
-                                    {{name}}
-                                </div>
-                            </td>
-                            <td width="62" height="65" style="width: 62px; height: 65px; text-align: center; ">
-                                <div *ngIf="handSize > 2 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
-                                    <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
-                                        {{handSize}}
+                                </td>
+                                <td style="width: 62px; height: 65px; text-align: center; ">
+                                    <div *ngIf="handSize > 2 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                        <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
+                                            {{handSize}}
+                                        </div>
                                     </div>
-                                </div>
-                                <div *ngIf="handSize == 2 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_2_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
-                                    <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
-                                        {{handSize}}
+                                    <div *ngIf="handSize == 2 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_2_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                        <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
+                                            {{handSize}}
+                                        </div>
                                     </div>
-                                </div>
-                                <div *ngIf="handSize == 1 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_1_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
-                                    <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
-                                        {{handSize}}
+                                    <div *ngIf="handSize == 1 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_1_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                        <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
+                                            {{handSize}}
+                                        </div>
                                     </div>
-                                </div>
-                                <div *ngIf="handSize == 0 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_0_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
-                                    <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
-                                        {{handSize}}
+                                    <div *ngIf="handSize == 0 " style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFFFF; background-image: url('./assets/hand_0_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:3px; ">
+                                        <div style="width: 60px; text-align: center; font-size: 30px; color:#FFDF00; position: absolute; line-height: 58px;" title="{{handSize}} Karten auf der Hand">
+                                            {{handSize}}
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <mrn-card-collection [collection]="this.table" name="Ausgelegt"></mrn-card-collection>                
                 </div>
-                {{handSize}} Handkarten
-                <mrn-card-collection [collection]="this.table" name="Ausgelegt"></mrn-card-collection>                
             </td>            
         </tr>       
     </table>
