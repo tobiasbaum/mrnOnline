@@ -1,4 +1,4 @@
-<table cellpadding="0" cellspacing="0" style="width: {{tableWidth}}px; height: {{tableHeight}}px; ">
+<table cellpadding="0" cellspacing="0" [style.width.px]="tableWidth" [style.height.px]="tableHeight" >
     <tr>
         <td style="width: 250px; height:46px; font-size: 30px; text-align:center; " class="selfName" [class.selfActive]="isOwnTurn()"><b>{{name}}</b></td>
         <td [style.width.px]="headerWidth">
@@ -6,7 +6,7 @@
                 <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[{{p.lifes}}]</div></a>&nbsp;</ng-container>
             </div>
         </td>
-        <td style="width: 222px; font-size: 12px; ">
+        <td style="white-space: nowrap; font-size: 12px; ">
             &nbsp;    
             <input type="button" *ngIf="!field.gameField.currentPlayerName" (click)="field.gameField.shuffleStartPlayer()"  style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/start_30x30.png')" title="zufälligen Startspieler bestimmen"/>
             <input type="button" *ngIf="isOwnTurn()" (click)="field.gameField.nextPlayer()" style="width:32px; height:32px; margin-top: 3px; background-image:url('./assets/end_turn_30x30.png')" title="Zug beenden"/>
