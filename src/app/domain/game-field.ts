@@ -563,12 +563,17 @@ export class CardCache {
       this.writeCardData(cardId, {
         state: CardState.Normal,
         locationType: LocationType.LIBRARY_OR_HAND,
-        locationPlayer: this.name,
+        locationPlayer: this.getCardController(cardId),
         locationData: undefined,
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
       this.db.put('handSizes', this.name, this.hand.size);
+    }
+
+    private getCardController(cardId: number) {
+      let icd : ImmutableCardData = this.db.get('cards', cardId);
+      return icd.controller;
     }
 
     private writeCardData(cardId: number, mcd: MutableCardData) {
@@ -693,7 +698,7 @@ export class CardCache {
         this.writeCardData(cardId, {
           state: CardState.Normal,
           locationType: LocationType.LIBRARY_OR_HAND,
-          locationPlayer: this.name,
+          locationPlayer: this.getCardController(cardId),
           locationData: undefined,
           counter: undefined
         });
