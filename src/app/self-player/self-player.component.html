@@ -1,8 +1,8 @@
 <table cellpadding="0" cellspacing="0" style="width: {{tableWidth}}px; height: {{tableHeight}}px; ">
     <tr>
         <td style="width: 250px; height:46px; font-size: 30px; text-align:center; " class="selfName" [class.selfActive]="isOwnTurn()"><b>{{name}}</b></td>
-        <td style="width:{{headerWidth}}px; ">
-            <div style="white-space: nowrap; width:{{headerWidth}}px; height: 46px; overflow-x: auto ; overflow-y: hidden; min-width: 0.01%;">
+        <td [style.width.px]="headerWidth">
+            <div [style.width.px]="headerWidth" style="white-space: nowrap; height: 46px; overflow-x: auto ; overflow-y: hidden; min-width: 0.01%;">
                 <ng-container *ngFor="let p of field.gameField.allActivePlayers"><a href="#{{p.id}}" [style.background-color]="p.color" class="playerLink" [class.activePlayer]="field.gameField.currentPlayerName === p.name">{{p.name}}<br><div style="font-size:11px;">[{{p.lifes}}]</div></a>&nbsp;</ng-container>
             </div>
         </td>
@@ -88,15 +88,15 @@
             <div style="width: {{gamefieldDivWidth}}px; height: {{gamefieldHeight}}px; padding: 0px; margin-bottom: 0px; overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <table cellpadding="0" cellspacing="0" style="width: {{opponentTableWidth}}px; ">
                     <tr valign="top">
-                        <td id="{{p.id}}" style="width: {{gamefieldWidth}}px; padding-left: 2px; padding-right: 2px; " *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
+                        <td id="{{p.id}}" [style.width.px]="gamefieldWidth" style="padding-left: 2px; padding-right: 2px; " *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
                     </tr>
                 </table>      
             </div>
         </td>
     </tr>
     <tr>
-        <td colspan="3" style="width: {{gamefieldDivWidth}}px; height: {{gamefieldHeight}}px; ">
-            <div style="width: {{gamefieldDivWidth}}px; height: {{gamefieldHeight}}px; padding: 0px;margin-bottom: 0px;overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
+        <td colspan="3" [style.width.px]="gamefieldWidth" [style.height.px]="gamefieldHeight" >
+            <div [style.width.px]="gamefieldWidth" [style.height.px]="gamefieldHeight" style="padding: 0px;margin-bottom: 0px;overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
                 <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
             </div>
