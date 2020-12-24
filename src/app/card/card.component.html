@@ -1,7 +1,7 @@
 <div class="dropdown">
   <div [class.tapped]="card.tapped" [class.blocker]="card.markedAsBlocker" class="cardStack" >
-    <img *ngFor="let m of card.reversedModifiers" class="card" (mouseover)="this.hover(m)" [src]="m.img | isSafeUrl" title="{{m.name}}" />
-    <img class="card" (mouseover)="this.hover(card)" [src]="card.img | isSafeUrl" title="{{card.name}}" />
+    <img *ngFor="let m of card.reversedModifiers" class="card" (mouseover)="this.hover(m)" [src]="m.img" title="{{m.name}}" />
+    <img class="card" (mouseover)="this.hover(card)" [src]="card.img" title="{{card.name}}" />
     <div *ngIf="card.counter" class="counter">{{card.counter}}</div>
   </div>
   <div class="dropdown-content">

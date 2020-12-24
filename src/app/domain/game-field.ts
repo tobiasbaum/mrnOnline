@@ -20,10 +20,6 @@ class CardType {
     }
   }
 
-  private createSvg(title: string): string {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 334"><rect x="5" y="5" width="230" height="324" fill="gray" /><text x="20" y="35">' + title + '</text></svg>';
-  }
-
   toDto(): CardTypeDto {
     return {
       name: this.name,
