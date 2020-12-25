@@ -12,6 +12,7 @@ import { ModalCardCollectionService } from '../modal-card-collection.service';
 export class SelfPlayerComponent implements OnInit {
 
   private destroy = new Subject();
+  private lastActivePlayer: string | undefined;
 
   constructor(
       public field: GameFieldStoreService, 
@@ -21,6 +22,12 @@ export class SelfPlayerComponent implements OnInit {
     field.subscribe(
       (f: GameField) => f.myself.subscribeForUpdate(() => ngz.run(() => cdr.markForCheck())),
       this.destroy);
+    field.subscribe(
+      f => f.registerPlayerChangeHandler(() => ngz.run(() => {
+        cdr.markForCheck();
+        this.activePlayerMightHaveChanged();
+      })),
+      this.destroy);
   }
 
   ngOnInit(): void {
@@ -28,6 +35,19 @@ export class SelfPlayerComponent implements OnInit {
 
   ngOnDestroy(): void {
     this.destroy.next();
+  }
+
+  private activePlayerMightHaveChanged() {
+    let activePlayer = this.field.gameField.currentPlayerName;
+    if (activePlayer && this.lastActivePlayer !== activePlayer) {
+      this.lastActivePlayer = activePlayer;
+      setTimeout(() => {
+        let pid = this.field.gameField.others.find((p: OtherPlayer) => p.name === this.lastActivePlayer)?.id;
+        if (pid) {
+          document.getElementById(pid)?.scrollIntoView();
+        }
+      }, 100);
+    }
   }
 
   get name(): string {

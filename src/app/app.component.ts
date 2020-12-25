@@ -44,11 +44,7 @@ export class AppComponent {
   constructor(
       public fieldService: GameFieldStoreService, 
       private http: HttpClient, 
-      private ngz: NgZone, 
-      cdr: ChangeDetectorRef) {
-    fieldService.subscribe(
-      f => f.registerPlayerChangeHandler(() => ngz.run(() => cdr.markForCheck())),
-      this.destroy);
+      private ngz: NgZone) {
   }
 
   ngOnDestroy(): void {
