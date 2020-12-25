@@ -948,6 +948,11 @@ export class CardCache {
       }
     }
 
+    get otherActivePlayers(): OtherPlayer[] {
+      this.ensurePlayersSorted();
+      return this.others.filter(p => p.isInGame);
+    }
+
     get allActivePlayers(): CommonPlayer[] {
       let ret = [this.myself, ...this.others].filter(x => x.isInGame);
       ret.sort((a, b) => a.orderNumber - b.orderNumber);

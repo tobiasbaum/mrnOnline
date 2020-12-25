@@ -79,7 +79,7 @@
                             <input type="button" (click)="this.untapAll()" style="width:32px; height:32px; position: absolute; margin-left: 205px; margin-top: 2px; background-image:url('./assets/untap_all_30x30.png')" title="Alles enttappen" />
                             <input type="button" (click)="this.copyID()" style="width:32px; height:32px; position: absolute; margin-left: 2px; margin-top: 2px; background-image:url('./assets/copy_id_30x30.png')" title="ID kopieren" />
                             <input type="button" (click)="discardAtRandom()" style="width:32px; height:32px; position: absolute; margin-left: 137px; margin-top: 2px; background-image:url('./assets/drop_at_random_30x30.png')" title="Zufällige Karte von der Hand abwerfen" />
-                            <div style="width: max-content; height: 32px; position:relative; margin-left: 36px; margin-top: 2px; font-weight: bold; font-size: 12px; line-height: 32px;">{{id}}</div>
+                            <div style="width: max-content; height: 32px; position:relative; margin-left: 36px; margin-top: 2px; font-size: 6pt; line-height: 32px;">{{id}}</div>
                     </td>
                 </tr>
             </table>
@@ -88,7 +88,7 @@
             <div [style.width.px]="gamefieldDivWidth" [style.height.px]="gamefieldHeight" style="padding: 0px; margin-bottom: 0px; overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <table cellpadding="0" cellspacing="0" [style.width.px]="opponentTableWidth">
                     <tr valign="top">
-                        <td id="{{p.id}}" [style.width.px]="gamefieldWidth" style="padding-left: 2px; padding-right: 2px; " *ngFor="let p of otherPlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
+                        <td id="{{p.id}}" [style.width.px]="gamefieldWidth" style="padding-left: 2px; padding-right: 2px; " *ngFor="let p of otherActivePlayers"><mrn-other-player  [me]="p"></mrn-other-player></td>
                     </tr>
                 </table>      
             </div>
@@ -96,9 +96,12 @@
     </tr>
     <tr>
         <td colspan="3" [style.width.px]="gamefieldWidth" [style.height.px]="gamefieldHeight" >
-            <div [style.width.px]="gamefieldWidth" [style.height.px]="gamefieldHeight" style="padding: 0px;margin-bottom: 0px;overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
+            <div *ngIf="this.isInGame" [style.width.px]="gamefieldWidth" [style.height.px]="gamefieldHeight" style="padding: 0px;margin-bottom: 0px;overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
                 <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
+            </div>
+            <div *ngIf="!this.isInGame">
+                {{name}} hat das Spiel verlassen.
             </div>
         </td>
     </tr>

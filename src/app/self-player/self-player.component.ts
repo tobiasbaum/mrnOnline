@@ -168,7 +168,7 @@ export class SelfPlayerComponent implements OnInit {
   }
   
   randomOpponent() {
-    let opponents = this.field.gameField.others.filter(p => p.isInGame);
+    let opponents = this.otherActivePlayers;
     if (opponents.length === 0) {
       return;
     }
@@ -180,8 +180,8 @@ export class SelfPlayerComponent implements OnInit {
     return this.field.gameField.currentPlayerName === this.field.gameField.myself.name;
   }
   
-  get otherPlayers(): OtherPlayer[] {
-    return this.field.gameField.others;
+  get otherActivePlayers(): OtherPlayer[] {
+    return this.field.gameField.otherActivePlayers;
   }
   
   endGameForPlayer() {
