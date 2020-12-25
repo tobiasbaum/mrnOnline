@@ -153,6 +153,7 @@ export class LocalLibrary {
   }
 
   putOnTop(cardId: number) {
+    this.removeIfContained(cardId);
     this.content.unshift(cardId);
     this.store();
   }
@@ -238,13 +239,13 @@ export class CardCache {
   constructor(deck: Card[] | undefined, private db: DistributedDatabaseSystem, private library: LocalLibrary) {
     if (deck) {
       deck.forEach(c => c.writeCardStats(db));
-      this.knownCards = deck.map(c => c.id);
+      this.knownCards = deck.map(c => c.id).filter((item, pos, self) => self.indexOf(item) == pos);
     } else {
-      this.knownCards = library.content.slice();
+      this.knownCards = library.content.slice().filter((item, pos, self) => self.indexOf(item) == pos);
     }
     this.dirty = true;
-    db.on('add', 'cardData', true, (cardId: number) => {
-      this.ensureKnown(cardId);
+    db.on('add', 'cardData', true, (cardId: any) => {
+      this.ensureKnown(Number(cardId));
       this.setDirty();
     });
     db.on('update', 'cardData', false, () => this.setDirty());
