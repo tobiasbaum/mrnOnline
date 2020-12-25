@@ -46,11 +46,11 @@ td.selfName {
 }
 
 td.selfName.selfActive {
-    color: red;
+    text-decoration: underline overline;
 }
 
 a.activePlayer {
-    border: dashed 1px #000000;
+    border: dashed 1px #FFFFFF;
     animation-duration: 0.7s;
     animation-name: showActive;
     animation-iteration-count: 2;
