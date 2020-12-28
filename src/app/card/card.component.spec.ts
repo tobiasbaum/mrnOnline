@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Card, CardType } from '../domain/game-field';
-import { IsSafeUrlPipe } from '../is-safe-url.pipe';
 
 import { CardComponent } from './card.component';
 
@@ -10,7 +9,7 @@ describe('CardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CardComponent, IsSafeUrlPipe ]
+      declarations: [ CardComponent ]
     })
     .compileComponents();
   });
