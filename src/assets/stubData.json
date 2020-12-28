@@ -38,7 +38,11 @@
         {"name": "Pygmy Troll", "type": "Creature - Troll", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/7/b/7be9714d-125f-4700-879d-b920fe9f1b68.jpg?1562088298"},
         {"name": "Locust Swarm", "type": "Summon Swarm", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/b/d/bd269842-4c31-4398-9451-be0d941397ac.jpg?1562721435"},
         {"name": "Venom", "type": "Enchant Creature", "img": "https://c1.scryfall.com/file/scryfall-cards/normal/front/c/b/cbb503ef-31a4-492d-9c7d-26b72c36904b.jpg?1595873015"},
-        {"name": "Llanowar Elves", "type": "Creature - Elf", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/7/3/73542493-cd0b-4bb7-a5b8-8f889c76e4d6.jpg?1605281272"}
+        {"name": "Llanowar Elves", "type": "Creature - Elf", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/7/3/73542493-cd0b-4bb7-a5b8-8f889c76e4d6.jpg?1605281272"},
+        {"name": "Scalding Tongs", "type": "Artifact", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/3/4/34136f2c-3edd-4ca3-b1ef-1fdcaa4518a0.jpg?1562053288"},
+        {"name": "Bullwhip", "type": "Artifact", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/f/f/ff312dd7-456c-4ce5-9614-e2cbe3c2219c.jpg?1562597857"},
+        {"name": "Purging Scythe", "type": "Artifact", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/0/e/0ef8128a-e0f5-43d6-b7bd-3f2003d83eab.jpg?1562898065"},
+        {"name": "Mox Emerald", "type": "Artifact", "img": "https://c1.scryfall.com/file/scryfall-cards/large/front/a/c/aced2c55-7543-4076-bcdd-36c4d649b8ae.jpg?1562929832"}
     ],
     "deck": [
         "Forest", 
@@ -60,8 +64,12 @@
         "Forest", 
         "Forest", 
         "Forest", 
+        "Forest", 
+        "Forest", 
+        "Forest", 
+        "Mox Emerald", 
         "Fog", 
-        "Fog", 
+        "Respite", 
         "Respite", 
         "Braidwood Cup",
         "Giant Growth",
@@ -81,6 +89,7 @@
         "Albino Troll",
         "Blanchwood Armor",
         "Blanchwood Armor",
+        "Blanchwood Armor",
         "Unyaro Bee Sting",
         "Stampede",
         "Wood Elves",
@@ -96,11 +105,16 @@
         "Storm Front",
         "Venom",
         "Venom",
+        "Venom",
         "Overgrowth",
         "Pygmy Troll",
         "Pygmy Troll",
         "Locust Swarm",
         "Locust Swarm",
+        "Scalding Tongs",
+        "Bullwhip",
+        "Bullwhip",
+        "Purging Scythe",
         "Llanowar Behemoth"]
 }
 
