@@ -155,6 +155,10 @@ export class SelfPlayerComponent implements OnInit {
   }
 
   openLibrary() {
+    let reallyOpen = confirm('Soll die Bibliothek wirklich geöffnet werden?');
+    if (!reallyOpen) {
+      return;
+    }
     this.gameField.myself.sendNotification('öffnet die Bibliothek');
     let subscr = this.mcc.closed.subscribe(() => {
       this.gameField.myself.sendNotification('schließt die Bibliothek')
