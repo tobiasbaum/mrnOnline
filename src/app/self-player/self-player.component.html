@@ -95,8 +95,8 @@
         </td>
     </tr>
     <tr>
-        <td colspan="3" [style.width.px]="gamefieldWidth" [style.height.px]="gamefieldHeight" >
-            <div *ngIf="this.isInGame" [style.width.px]="gamefieldWidth" [style.height.px]="gamefieldHeight" style="padding: 0px;margin-bottom: 0px;overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
+        <td colspan="3" [style.width.px]="gamefieldDivWidth" [style.height.px]="gamefieldHeight" >
+            <div *ngIf="this.isInGame" [style.width.px]="gamefieldDivWidth" [style.height.px]="gamefieldHeight" style="padding: 0px;margin-bottom: 0px;overflow-y: scroll; border: 1px solid #000000;overflow-x: auto;min-height: 0.01%; background-color: #FFFFFF;">
                 <mrn-card-collection [collection]="this.table" name="Ausgelegt" [act]="'TA,UT,BL,GR,EX,HA,MO,CO,LI'"></mrn-card-collection>
                 <mrn-card-collection [collection]="this.hand" name="Hand" [act]="'PL,PT,GR,EX,LI'"></mrn-card-collection>
             </div>
