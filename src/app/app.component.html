@@ -11,8 +11,9 @@
             </tr>
         </table>
         <button (click)="this.waitForOthers()">Neues Spiel starten</button>
-        <button (click)="this.join()">Existierendem Spiel beitreten ...</button>
         <button *ngIf="gameExists()" (click)="this.continueGame()">Spiel fortsetzen</button>
+        <button (click)="this.join()">Existierendem Spiel beitreten ...</button>
+        <button (click)="this.joinAsSpectator()">Als Zuschauer beitreten ...</button>
     </form>
 </ng-container>
 <ng-container *ngIf="state === 'joined'">

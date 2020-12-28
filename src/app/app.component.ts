@@ -10,6 +10,7 @@ interface GameSettings {
   name: string;
   idToJoin: string | undefined;
   clean: boolean;
+  spectator: boolean;
 }
 
 @Component({
@@ -62,11 +63,11 @@ export class AppComponent {
     return false;
   }
 
-  private start(idToJoin: string | undefined, clean: boolean) {
+  private start(idToJoin: string | undefined, clean: boolean, spectator: boolean) {
     let name = this.formData.playerName;
     if (name) {
       localStorage.setItem('mrnUserName', name);
-      this.createPeer({name, idToJoin, clean});
+      this.createPeer({name, idToJoin, clean, spectator});
     }
   }
   
@@ -93,6 +94,9 @@ private loadDeckAndInitGame(peer: any, s: GameSettings) {
       deck = undefined;
     }
     this.fieldService.init(new GameField(peer, peer.id, this.formData.playerName as string, deck, s.clean));
+    if (s.spectator) {
+      this.fieldService.gameField.setEndedPlayer(this.fieldService.gameField.myself.name, true);
+    }
     if (s.idToJoin) {
       this.fieldService.gameField.connectToOtherPlayer(s.idToJoin);
     }
@@ -118,16 +122,23 @@ mapDecksAndCards(data: any): Card[] {
 join() {
     var other = prompt('ID des Mitspielers');
     if (other) {
-      this.start(other, true);
+      this.start(other, true, false);
     }
 }
 
+joinAsSpectator() {
+  var other = prompt('ID des Mitspielers');
+  if (other) {
+    this.start(other, true, true);
+  }
+}
+
 waitForOthers() {
-  this.start(undefined, true);
+  this.start(undefined, true, false);
 }
 
 continueGame() {
-  this.start(undefined, false);
+  this.start(undefined, false, false);
 }
 
 }

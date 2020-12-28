@@ -998,14 +998,18 @@ export class CardCache {
         if (p.id === nameOrId || p.name === nameOrId) {
           let oldState = this.db.get('endedPlayers', p.name);
           if (oldState) {
-            this.db.put('endedPlayers', p.name, false);
+            this.setEndedPlayer(p.name, false);
             this.sendGlobalNotification(p.name + ' tritt wieder ins Spiel ein');  
           } else {
-            this.db.put('endedPlayers', p.name, true);
+            this.setEndedPlayer(p.name, true);
             this.sendGlobalNotification(p.name + ' verlässt das Spiel');  
           }
         }
       });
+    }
+
+    setEndedPlayer(name: string, ended: boolean) {
+      this.db.put('endedPlayers', name, ended);
     }
   }
 
