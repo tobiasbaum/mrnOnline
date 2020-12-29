@@ -15,7 +15,7 @@
                                 <td colspan="2" style="width: 125px;">
                                     <div style="width: 120px; height: 168px; text-align: center; position:relative; background-color: #C4C4C4; margin-top: 2px; margin-left:2px;">
                                         <div style="width: 120px; text-align: center; position:absolute;">
-                                            <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>    
+                                            <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [state]="'onlyFirst'" [allowOnlyFirst]="true"></mrn-card-collection>    
                                         </div>
                                     </div>
                                     
@@ -75,28 +75,3 @@
             </td>            
         </tr>       
     </table>
-
-
-    
-
-<!--
-
-                                <div style="width: 58px; height: 57px; text-align: center; position: relative; background-color: #FFFF; background-image: url('./assets/snake_grey_58x57.png'); border: solid 1px #000000; margin-right: 2px; margin-top:2px; ">
-                                    <div  *ngIf="poisonCount > 0" style="width: 60px; text-align: center; position:absolute; margin-top: 6px;" title="Anzahl Giftmarken">
-                                        {{poisonCount}}
-                                    </div>
-                                </div>
-
-
-<fieldset id="{{id}}">
-    <legend [class.turn]="isCurrentPlayer()">{{name}} ({{id}})</legend>
-    <ng-container *ngIf="this.isInGame">
-        {{lifes}} Lebenspunkte, {{handSize}} Handkarten, {{librarySize}} Karten in der Bibliothek<br/>
-        <mrn-card-collection [collection]="this.table" name="Ausgelegt"></mrn-card-collection>
-        <mrn-card-collection [collection]="this.graveyard" name="Friedhof" [collapsed]="true"></mrn-card-collection>    
-    </ng-container>
-    <ng-container *ngIf="!this.isInGame">
-        Hat das Spiel verlassen.
-    </ng-container>
-</fieldset>
--->

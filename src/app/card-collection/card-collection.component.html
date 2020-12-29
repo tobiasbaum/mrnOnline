@@ -1,8 +1,12 @@
-<div><span (click)="this.collapsed = !this.collapsed">{{this.name}}: {{this.collection.size}} Karten. </span>
-    <ng-container *ngIf="collapsed">
+<div>
+    <ng-container *ngIf="this.state === 'onlyFirst'">
+        <mrn-card *ngIf="this.collection.size > 0" style="position: absolute; top: 0px; left: 0px;" [card]="this.collection.cards[0]" [act]="this.act"></mrn-card>
+    </ng-container>
+    <span (click)="nextState()" [class.floatOver]="this.state === 'onlyFirst'">{{this.name}}: {{this.collection.size}} Karten. </span>
+    <ng-container *ngIf="this.state === 'collapsed'">
         <span *ngFor="let c of this.cardCombined(); let i = index" (mouseover)="this.hover(c.type)"><ng-container *ngIf="i !== 0">, </ng-container>{{c.text}}</span>
     </ng-container>
-    <ng-container *ngIf="!collapsed">
+    <ng-container *ngIf="this.state === 'full'">
         <br/>
         <mrn-card *ngFor="let c of this.collection" [card]="c" [act]="this.act"></mrn-card>
         <ng-container *ngIf="this.collection.size === 0">

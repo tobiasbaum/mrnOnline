@@ -19,11 +19,28 @@ export class CardCollectionComponent implements OnInit {
   public act: string = '';
 
   @Input()
-  public collapsed: boolean = false;
+  public allowOnlyFirst: boolean = false;
+
+  @Input()
+  public state: string = 'full';
 
   constructor(private hc: HoveredCardService) { }
 
   ngOnInit(): void {
+  }
+
+  nextState() {
+    if (this.state === 'full') {
+      this.state = 'collapsed';
+    } else if (this.state === 'collapsed') {
+      if (this.allowOnlyFirst) {
+        this.state = 'onlyFirst';
+      } else {
+        this.state = 'full';
+      }
+    } else {
+      this.state = 'full';
+    }
   }
 
   cardCombined() {
