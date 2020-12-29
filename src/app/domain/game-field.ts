@@ -569,7 +569,7 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
-      this.db.put('handSizes', this.name, this.hand.size);
+      this.updateHandAndLibrarySize();
     }
 
     private getCardController(cardId: number) {
@@ -629,6 +629,7 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(card.id);
+      this.updateHandAndLibrarySize();
       if (card.type.token) {
         this.sendNotification('Token ' + card.name + ' verschwindet');
       } else {
@@ -645,6 +646,8 @@ export class CardCache {
         locationData: undefined,
         counter: undefined
       });
+      this.localLibrary.removeIfContained(card.id);
+      this.updateHandAndLibrarySize();
       if (card.type.token) {
         this.sendNotification('Token ' + card.name + ' verschwindet');
       } else {
@@ -662,9 +665,14 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
-      this.db.put('handSizes', this.name, this.hand.size);
+      this.updateHandAndLibrarySize();
       this.sendNotification('spielt ' + this.cardName(cardId) + ' aus');
       this.subject.next();
+    }
+
+    private updateHandAndLibrarySize() {
+      this.db.put('handSizes', this.name, this.hand.size);
+      this.db.put('librarySizes', this.name, this.library.size);
     }
 
     private cardName(cardId: number): string {
@@ -680,7 +688,7 @@ export class CardCache {
         counter: undefined
       });
       this.localLibrary.removeIfContained(cardId);
-      this.db.put('handSizes', this.name, this.hand.size);
+      this.updateHandAndLibrarySize();
       this.sendNotification('spielt ' + this.cardName(cardId) + ' getappt aus');
       this.subject.next();
     }
@@ -707,8 +715,7 @@ export class CardCache {
       }
       this.localLibrary.putOnTop(cardId);
       this.cardCache.setDirty();
-      this.db.put('handSizes', this.name, this.hand.size);
-      this.db.put('librarySizes', this.name, this.library.size);
+      this.updateHandAndLibrarySize();
       this.subject.next();
     }
   
