@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DistributedDatabaseSystem } from './distributed-database';
+import { RTCDB } from 'rtcdb';
 
 class CardType {
 
@@ -167,7 +167,7 @@ class CachedCards {
   private cardsPerPlayer: Map<string, CachedCardsForPlayer> = new Map();
   private mappedCards: Map<number, Card> = new Map();
 
-  constructor(private db: DistributedDatabaseSystem, private library: LocalLibrary, knownCards: number[]) {
+  constructor(private db: RTCDB, private library: LocalLibrary, knownCards: number[]) {
     knownCards.forEach((cardId: number) => {
       this.getOrCreateCard(cardId);
     });
@@ -236,7 +236,7 @@ export class CardCache {
   private dirty: boolean;
   private content: CachedCards | undefined;
 
-  constructor(deck: Card[] | undefined, private db: DistributedDatabaseSystem, private library: LocalLibrary) {
+  constructor(deck: Card[] | undefined, private db: RTCDB, private library: LocalLibrary) {
     if (deck) {
       deck.forEach(c => c.writeCardStats(db));
       this.knownCards = deck.map(c => c.id).filter((item, pos, self) => self.indexOf(item) == pos);
@@ -345,7 +345,7 @@ export class CardCache {
       return this.mods;
     }
 
-    writeCardStats(db: DistributedDatabaseSystem) {
+    writeCardStats(db: RTCDB) {
       db.put('cards', this.id, {
         type: this.type.toDto(),
         controller: this.controllerName
@@ -444,12 +444,12 @@ export class CardCache {
       public lifes: number;
       public poisonCount: number;
       public readonly color: string;
-      public readonly db: DistributedDatabaseSystem;
+      public readonly db: RTCDB;
       public readonly orderNumber: number;
       private graveyardCounter: number = 0;
       private readonly subject: Subject<void> = new Subject();
 
-    constructor(id: string, name: string, db: DistributedDatabaseSystem, cardCache: CardCache, localLibrary: LocalLibrary, clean: boolean) {
+    constructor(id: string, name: string, db: RTCDB, cardCache: CardCache, localLibrary: LocalLibrary, clean: boolean) {
       this.id = id;
       this.name = name;
       this.db = db;
@@ -815,7 +815,7 @@ export class CardCache {
   export class OtherPlayer implements CommonPlayer {
     private subject: Subject<void> = new Subject();
 
-    constructor(public name: string, public db: DistributedDatabaseSystem, private cardCache: CardCache) {
+    constructor(public name: string, public db: RTCDB, private cardCache: CardCache) {
       this.db.on(['add', 'update'], 'playerData', false, (playerName: string, name: any) => this.notifyIfRightName(playerName));
       this.db.on(['add', 'update'], 'lifes', false, (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
       this.db.on(['add', 'update'], 'endedPlayers', false, (playerName: string, cnt: any) => this.notifyIfRightName(playerName));
@@ -889,14 +889,14 @@ export class CardCache {
   }
   
   class GameField {
-    private db: DistributedDatabaseSystem;
+    private db: RTCDB;
     private cardCache: CardCache;
     public others: OtherPlayer[];
     public myself: SelfPlayer;
 
     constructor(peer: any, ownId: string, ownName: string, deck: Card[] | undefined, clean: boolean) {
       this.others = [];
-      this.db = new DistributedDatabaseSystem(ownName, peer, ownId, localStorage, clean);
+      this.db = new RTCDB(ownName, peer, ownId, localStorage, clean);
       let localLibrary = new LocalLibrary(ownName, localStorage, deck);
       if (clean) {
         localLibrary.shuffle();

@@ -78,7 +78,7 @@ export class AppComponent {
         console.log(err);
         alert('' + err);
     });
-    peer.on('open', (id: string) => {
+    peer.once('open', (id: string) => {
         //alert('My peer ID is: ' + id);
         this.ngz.run(() => this.loadDeckAndInitGame(peer, s));
     });
